@@ -82,15 +82,24 @@ fn main_real (
 
 	// perform a checksum on each one
 
-	let filename_and_checksum_lists: FilenameAndChecksumLists =
-		try! (
-			examine::split_by_hash (
-				filename_and_size_lists));
+	let (filename_and_checksum_lists, checksum_error_count) =
+		examine::split_by_hash (
+			output,
+			filename_and_size_lists);
 
 	output.message (
 		& format! (
 			"Found {} filenames and checksums that coincide",
 			filename_and_checksum_lists.len ()));
+
+	if checksum_error_count > 0 {
+
+		output.message (
+			& format! (
+				"Encountered {} errors while calculating checksums",
+				checksum_error_count));
+
+	}
 
 	if filename_and_checksum_lists.is_empty () {
 		return Ok (());

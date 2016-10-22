@@ -5,6 +5,7 @@ use std::fs::File;
 use std::path::Path;
 
 use misc::*;
+use output::*;
 use types::*;
 
 fn checksum_for_file <PathRef: AsRef <Path>> (
@@ -46,16 +47,19 @@ fn checksum_for_file <PathRef: AsRef <Path>> (
 }
 
 pub fn split_by_hash (
+	output: & mut Output,
 	filename_and_size_lists: FilenameAndSizeLists,
-) -> Result <FilenameAndChecksumLists, String> {
+) -> (FilenameAndChecksumLists, u64) {
 
 	let mut result =
 		FilenameAndChecksumLists::new ();
 
+	let mut error_count: u64 = 0;
+
 	let mut progress: usize = 0;
 	let target = filename_and_size_lists.len ();
 
-	stderrln! (
+	output.status (
 		"Checksum progress: 0%");
 
 	for (filename_and_size, path_list)
@@ -63,23 +67,40 @@ pub fn split_by_hash (
 
 		for path in path_list {
 
-			let checksum =
-				try! (
-					checksum_for_file (
-						& path));
+			match checksum_for_file (
+				& path,
+			) {
 
-			let coinciding_paths =
-				result.entry (
-					FilenameAndChecksum {
-						filename: filename_and_size.filename.clone (),
-						checksum: checksum,
-					}
-				).or_insert (
-					Vec::new (),
-				);
+				Ok (checksum) => {
 
-			coinciding_paths.push (
-				path);
+					let coinciding_paths =
+						result.entry (
+							FilenameAndChecksum {
+								filename: filename_and_size.filename.clone (),
+								checksum: checksum,
+							}
+						).or_insert (
+							Vec::new (),
+						);
+
+					coinciding_paths.push (
+						path);
+
+				},
+
+				Err (error) => {
+
+					output.message (
+						& format! (
+							"Error checksumming {:?}: {}",
+							& path,
+							error));
+
+					error_count += 1;
+
+				},
+
+			}
 
 		}
 
@@ -87,16 +108,18 @@ pub fn split_by_hash (
 
 		if progress % 256 == 0 {
 
-			stderrln! (
-				"{}Checksum progress: {}%",
-				"\x1b[A",
-				progress * 100 / target);
+			output.status (
+				& format! (
+					"Checksum progress: {}%",
+					progress * 100 / target));
 
 		}
 
 	}
 
-	Ok (result)
+	output.clear_status ();
+
+	(result, error_count)
 
 }
 
