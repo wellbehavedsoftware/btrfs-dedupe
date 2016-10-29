@@ -5,3 +5,4 @@ authors = [ "James Pharaoh <james@pharaoh.uk>" ]
 
 [dependencies]
 btrfs = "1.0"
+termion = "1.1"

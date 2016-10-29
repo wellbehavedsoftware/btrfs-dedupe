@@ -1,4 +1,5 @@
 extern crate btrfs;
+extern crate termion;
 
 #[ doc (hidden) ]
 #[ macro_use ]

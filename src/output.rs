@@ -1,9 +1,15 @@
 use std::cmp;
-use std::env;
+use std::io;
+use std::io::Stdout;
+
+use termion;
+use termion::raw::IntoRawMode;
+use termion::raw::RawTerminal;
 
 pub struct Output {
-	status: Option <String>,
+	terminal: Option <RawTerminal <Stdout>>,
 	columns: u64,
+	status: Option <String>,
 }
 
 impl Output {
@@ -11,21 +17,35 @@ impl Output {
 	pub fn new (
 	) -> Output {
 
+		let mut terminal =
+			match io::stdout ().into_raw_mode () {
+
+			Ok (terminal) =>
+				terminal,
+
+			Err (_) =>
+				return Output {
+					terminal: None,
+					columns: 99999,
+					status: None,
+				},
+
+		};
+
 		let columns: u64 =
-			env::var_os (
-				"COLUMNS",
-			).and_then (
-				|string_value|
+			match termion::terminal_size () {
 
-				string_value.to_string_lossy ().parse ().ok ()
+			Ok ((columns, _rows)) =>
+				columns as u64,
 
-			).unwrap_or (
-				80
-			);
+			Err (_) => 80,
+
+		};
 
 		Output {
-			status: None,
+			terminal: Some (terminal),
 			columns: columns,
+			status: None,
 		}
 
 	}
@@ -46,15 +66,15 @@ impl Output {
 		if self.status.is_some () {
 
 			stderr! (
-				"\x1b[A\x1b[K");
+				"\r\x1b[A\x1b[K");
 
 		}
 
 		self.status =
 			Some (status.to_owned ());
 
-		stderrln! (
-			"{}",
+		stderr! (
+			"{}\r\n",
 			status);
 
 	}
@@ -67,18 +87,18 @@ impl Output {
 		if self.status.is_some () {
 
 			stderr! (
-				"\x1b[A\x1b[K");
+				"\r\x1b[A\x1b[K");
 
 		}
 
-		stderrln! (
-			"{}",
+		stderr! (
+			"{}\r\n",
 			message);
 
 		if self.status.is_some () {
 
-			stderrln! (
-				"{}",
+			stderr! (
+				"{}\r\n",
 				self.status.as_ref ().unwrap ());
 
 		}
@@ -92,7 +112,7 @@ impl Output {
 		if self.status.is_some () {
 
 			stderr! (
-				"\x1b[A\x1b[K");
+				"\r\x1b[A\x1b[K");
 
 		}
 
