@@ -1,0 +1,10 @@
+name="btrfs-dedupe"
+
+contents=(
+	"btrfs-dedupe"
+)
+
+target="ubuntu@dist.vpn.wellbehavedsoftware.com:dist/btrfs-dedupe"
+
+# ex: noet ts=4 filetype=sh
+
