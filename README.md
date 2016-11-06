@@ -10,8 +10,8 @@ It is released into the public domain under the permissive [MIT license]
 (https://opensource.org/licenses/MIT). Dependencies may have other licenses,
 please be aware that these apply to statically linked binary releases.
 
-It is hosted at [gitlab.wellbehavedsoftware.com]
-(https://gitlab.wellbehavedsoftware.com/well-behaved-software/wbs-backup/tree/master/btrfs-dedupe) — please report any issues or feature requests here.
+It is hosted at [btrfs-dedupe.com]
+(http://btrfs-dedupe.com) — please report any issues or feature requests here.
 
 It is also available from the following locations:
 
