@@ -1,6 +1,6 @@
 [package]
 name = "btrfs-dedupe"
-version = "1.0.1"
+version = "1.0.2"
 description = "BTRFS whole-file deduplication tool"
 license = "MIT"
 homepage = "https://gitlab.wellbehavedsoftware.com/well-behaved-software/wbs-backup/tree/master/btrfs-dedupe"
@@ -12,6 +12,7 @@ authors = [
 
 include = [
 	"Cargo.toml",
+	"LICENSE",
 	"README.md",
 	"src/**/*",
 ]
