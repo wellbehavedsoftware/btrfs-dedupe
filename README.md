@@ -29,15 +29,6 @@ to deduplicate the entire file for every match it finds. Optionally, it can
 match filenames as well as sizes; this may make the program run faster in some
 cases.
 
-There is also [ongoing work]
-(http://www.mail-archive.com/linux-btrfs%40vger.kernel.org/msg32862.html) to
-enable automatic realtime deduplication in the filesystem itself, but this is
-likely to take a long time to stablise, and there are fundamental issues with
-the concept which make it unsuitable for many cases.
-
-There is a [wiki page](https://btrfs.wiki.kernel.org/index.php/Deduplication)
-with general information about the state of deduplication in BTRFS.
-
 ## Usage
 
 From the built-in help:
@@ -57,7 +48,9 @@ FLAGS:
 
 ARGS:
     <PATH>...    Root path to scan for files
-```## Alternatives
+```
+
+## Alternatives
 
 There are two alternatives, of which I am aware:
 
@@ -74,3 +67,12 @@ available when it was created), although a branch supports this. It also suffers
 from leaving filesystems in an inconsistent state in the case of errors, namely
 setting files as immutable, and it also crashes if there are many files to
 deduplicate.
+
+There is also [ongoing work]
+(http://www.mail-archive.com/linux-btrfs%40vger.kernel.org/msg32862.html) to
+enable automatic realtime deduplication in the filesystem itself, but this is
+likely to take a long time to stablise, and there are fundamental issues with
+the concept which make it unsuitable for many cases.
+
+There is a [wiki page](https://btrfs.wiki.kernel.org/index.php/Deduplication)
+with general information about the state of deduplication in BTRFS.
