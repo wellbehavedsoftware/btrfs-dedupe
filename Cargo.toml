@@ -1,7 +1,12 @@
 [package]
 name = "btrfs-dedupe"
 version = "1.0.0"
-authors = [ "James Pharaoh <james@pharaoh.uk>" ]
+description = "BTRFS whole-file deduplication tool"
+license = "Apache-2.0"
+
+authors = [
+	"James Pharaoh <james@pharaoh.uk>",
+]
 
 [dependencies]
 btrfs = "1.0"
