@@ -5,4 +5,6 @@ authors = [ "James Pharaoh <james@pharaoh.uk>" ]
 
 [dependencies]
 btrfs = "1.0"
+clap = "*"
+sha2 = "*"
 termion = "1.1"

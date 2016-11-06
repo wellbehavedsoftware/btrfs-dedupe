@@ -9,9 +9,10 @@ use output::Output;
 use types::*;
 
 fn scan_directory_internal <AsPath: AsRef <Path>> (
+	arguments: & Arguments,
 	output: & mut Output,
 	directory: AsPath,
-	filename_and_size_counts: & mut FilenameAndSizeLists,
+	file_metadata_lists: & mut FileMetadataLists,
 	progress: & mut u64,
 ) -> Result <(), String> {
 
@@ -86,19 +87,27 @@ fn scan_directory_internal <AsPath: AsRef <Path>> (
 
 			try! (
 				scan_directory_internal (
+					arguments,
 					output,
 					entry.path (),
-					filename_and_size_counts,
+					file_metadata_lists,
 					progress));
 
 		} else if file_type.is_file () {
 
 			let paths =
-				filename_and_size_counts.entry (
-					FilenameAndSize {
-						filename: PathBuf::from (
-							entry.file_name ()),
+				file_metadata_lists.entry (
+					FileMetadata {
+
+						filename: if arguments.match_filename {
+							Some (
+								PathBuf::from (
+									entry.file_name ())
+							)
+						} else { None },
+
 						size: metadata.len (),
+
 					},
 				).or_insert (
 					Vec::new (),
@@ -151,20 +160,21 @@ pub fn scan_directory <AsPath: AsRef <Path>> (
 }
 */
 
-pub fn scan_directories <AsPath: AsRef <Path>> (
+pub fn scan_directories (
+	arguments: & Arguments,
 	output: & mut Output,
-	directories: & [AsPath],
-) -> Result <FilenameAndSizeLists, String> {
+) -> Result <FileMetadataLists, String> {
 
-	let mut result: FilenameAndSizeLists =
-		FilenameAndSizeLists::new ();
+	let mut result: FileMetadataLists =
+		FileMetadataLists::new ();
 
 	let mut progress: u64 = 0;
 
-	for directory in directories {
+	for directory in & arguments.root_paths {
 
 		try! (
 			scan_directory_internal (
+				arguments,
 				output,
 				directory,
 				& mut result,
@@ -176,8 +186,13 @@ pub fn scan_directories <AsPath: AsRef <Path>> (
 
 	output.message (
 		& format! (
-			"Found {} unique filenames and sizes",
-			result.len ()));
+			"Found {} unique {}",
+			result.len (),
+			if arguments.match_filename {
+				"filenames and sizes"
+			} else {
+				"file sizes"
+			}));
 
 	Ok (result)
 

@@ -1,22 +1,25 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 
+pub struct Arguments {
+	pub match_filename: bool,
+	pub root_paths: Vec <PathBuf>,
+}
+
 #[ derive (Eq, Hash, PartialEq) ]
-pub struct FilenameAndSize {
-	pub filename: PathBuf,
+pub struct FileMetadata {
+	pub filename: Option <PathBuf>,
 	pub size: u64,
 }
 
-pub type FilenameAndSizeLists =
-	HashMap <FilenameAndSize, Vec <PathBuf>>;
+pub type FileMetadataLists =
+	HashMap <FileMetadata, Vec <PathBuf>>;
 
-#[ derive (Eq, Hash, PartialEq) ]
-pub struct FilenameAndChecksum {
-	pub filename: PathBuf,
-	pub checksum: u64,
-}
+pub const HASH_SIZE: usize = 32;
 
-pub type FilenameAndChecksumLists =
-	HashMap <FilenameAndChecksum, Vec <PathBuf>>;
+pub type Hash = [u8; HASH_SIZE];
+
+pub type HashLists =
+	HashMap <Hash, Vec <PathBuf>>;
 
 // ex: noet ts=4 filetype=rust

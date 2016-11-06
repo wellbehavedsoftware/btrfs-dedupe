@@ -1,4 +1,8 @@
+#[ macro_use ]
+extern crate clap;
+
 extern crate btrfs;
+extern crate sha2;
 extern crate termion;
 
 #[ doc (hidden) ]
@@ -10,7 +14,6 @@ mod output;
 mod scan;
 mod types;
 
-use std::env;
 use std::path::PathBuf;
 use std::process;
 
@@ -19,10 +22,14 @@ use output::Output;
 
 fn main () {
 
+	let arguments =
+		parse_arguments ();
+
 	let mut output =
 		Output::new ();
 
 	match main_real (
+		& arguments,
 		& mut output,
 	) {
 
@@ -45,31 +52,73 @@ fn main () {
 
 }
 
+fn parse_arguments (
+) -> Arguments {
+
+	let argument_matches = (
+		clap::App::new ("Btrfs Dedupe")
+
+		.arg (
+			clap::Arg::with_name ("match-filename")
+				.long ("match-filename")
+				.help ("Match filename as well as checksum")
+		)
+
+		.arg (
+			clap::Arg::with_name ("root-path")
+				.multiple (true)
+				.help ("Root path to scan for files")
+		)
+
+	).get_matches ();
+
+	let match_filename =
+		argument_matches.is_present (
+			"match-filename",
+		);
+
+	let root_paths = (
+		argument_matches.values_of_os (
+			"root-path",
+		)
+	).map (
+		|os_values|
+
+		os_values.map (
+			|os_value|
+
+			PathBuf::from (os_value)
+
+		).collect ()
+
+	).unwrap_or (
+		Vec::new (),
+	);
+
+	Arguments {
+		match_filename: match_filename,
+		root_paths: root_paths,
+	}
+
+}
+
 fn main_real (
+	arguments: & Arguments,
 	output: & mut Output,
 ) -> Result <(), String> {
 
 	// create a list of all files with the same name and size
 
-	let directories: Vec <PathBuf> =
-		env::args_os ().skip (1).map (
-			|argument|
-
-		PathBuf::from (
-			argument)
-
-	).collect ();
-
-	let filename_and_size_lists: FilenameAndSizeLists =
-		try! (
-			scan::scan_directories (
-				output,
-				& directories));
+	let file_metadata_lists: FileMetadataLists = try! (
+		scan::scan_directories (
+			& arguments,
+			output)
+	);
 
 	// discard any with only a single coincidence
 
-	let filename_and_size_lists: FilenameAndSizeLists =
-		filename_and_size_lists.into_iter ().filter (
+	let file_metadata_lists: FileMetadataLists =
+		file_metadata_lists.into_iter ().filter (
 			|& (_, ref value)|
 
 		value.len () > 1
@@ -78,15 +127,20 @@ fn main_real (
 
 	output.message (
 		& format! (
-			"Found {} filenames and sizes that coincide",
-			filename_and_size_lists.len ()));
+			"Found {} {} that coincide",
+			file_metadata_lists.len (),
+			if arguments.match_filename {
+				"filenames and sizes"
+			} else {
+				"sizes"
+			}));
 
 	// perform a checksum on each one
 
 	let (filename_and_checksum_lists, checksum_error_count) =
 		examine::split_by_hash (
 			output,
-			filename_and_size_lists);
+			file_metadata_lists);
 
 	output.message (
 		& format! (

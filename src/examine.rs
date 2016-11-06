@@ -1,5 +1,6 @@
-use std::hash::Hasher;
-use std::hash::SipHasher;
+use sha2::Digest;
+use sha2::Sha256;
+
 use std::io::Read;
 use std::fs::File;
 use std::path::Path;
@@ -10,7 +11,7 @@ use types::*;
 
 fn checksum_for_file <PathRef: AsRef <Path>> (
 	path: PathRef,
-) -> Result <u64, String> {
+) -> Result <Hash, String> {
 
 	let mut file =
 		try! (
@@ -19,7 +20,7 @@ fn checksum_for_file <PathRef: AsRef <Path>> (
 					path)));
 
 	let mut hasher =
-		SipHasher::new ();
+		Sha256::new ();
 
 	let mut buffer: [u8; 0x1000] =
 		[0u8; 0x1000];
@@ -36,34 +37,40 @@ fn checksum_for_file <PathRef: AsRef <Path>> (
 			break;
 		}
 
-		hasher.write (
+		hasher.input (
 			& buffer [
 				0 .. bytes_read]);
 
 	}
 
-	Ok (hasher.finish ())
+	let mut result: Hash =
+		[0u8; HASH_SIZE];
+
+	result.copy_from_slice (
+		& hasher.result ());
+
+	Ok (result)
 
 }
 
 pub fn split_by_hash (
 	output: & mut Output,
-	filename_and_size_lists: FilenameAndSizeLists,
-) -> (FilenameAndChecksumLists, u64) {
+	file_metadata_lists: FileMetadataLists,
+) -> (HashLists, u64) {
 
 	let mut result =
-		FilenameAndChecksumLists::new ();
+		HashLists::new ();
 
 	let mut error_count: u64 = 0;
 
 	let mut progress: usize = 0;
-	let target = filename_and_size_lists.len ();
+	let target = file_metadata_lists.len ();
 
 	output.status (
 		"Checksum progress: 0%");
 
-	for (filename_and_size, path_list)
-		in filename_and_size_lists {
+	for (_file_metadata, path_list)
+		in file_metadata_lists {
 
 		for path in path_list {
 
@@ -75,10 +82,7 @@ pub fn split_by_hash (
 
 					let coinciding_paths =
 						result.entry (
-							FilenameAndChecksum {
-								filename: filename_and_size.filename.clone (),
-								checksum: checksum,
-							}
+							checksum,
 						).or_insert (
 							Vec::new (),
 						);
