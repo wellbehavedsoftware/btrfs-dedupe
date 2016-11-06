@@ -6,6 +6,9 @@ invoking the kernel deduplication ioctl for all those that match.
 
 It is written by [James Pharaoh](james@pharaoh.uk).
 
+It is released into the public domain under the permissive [MIT license]
+(https://opensource.org/licenses/MIT).
+
 It is hosted at [gitlab.wellbehavedsoftware.com]
 (https://gitlab.wellbehavedsoftware.com/well-behaved-software/wbs-backup/tree/master/btrfs-dedupe) — please report any issues or feature requests here.
 
