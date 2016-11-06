@@ -1,11 +1,11 @@
 [root]
 name = "btrfs-dedupe"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
- "btrfs 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "btrfs 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.18.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "sha2 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "termion 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "termion 1.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -20,7 +20,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "btrfs"
-version = "1.0.0"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "ioctl 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -144,7 +144,7 @@ dependencies = [
 
 [[package]]
 name = "termion"
-version = "1.1.1"
+version = "1.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "libc 0.2.17 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -188,7 +188,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [metadata]
 "checksum ansi_term 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)" = "23ac7c30002a5accbf7e8987d0632fa6de155b7c3d39d0067317a391e00a2ef6"
 "checksum bitflags 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "aad18937a628ec6abcd26d1489012cc0e18c21798210f491af69ded9b881106d"
-"checksum btrfs 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "0940bfcc3c8c0d16689896b07b79e0b2b86f68fa966cc4b6912f4e9145e90182"
+"checksum btrfs 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "27fe7762522d09387f4c5104cda519ad828e54b7d0d403aaaf169b400d046818"
 "checksum byte-tools 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "742304e40c19c876b1546af6e5fa55e1e24293cf16f0fec3419da34a839518b2"
 "checksum clap 2.18.0 (registry+https://github.com/rust-lang/crates.io-index)" = "40046b8a004bf3ba43b9078bf4b9b6d1708406a234848f925dbd7160a374c8a8"
 "checksum digest 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "351f7beb6a00bbeaae9917ce01e390ba6005e7431cc244cb47a36e748ba6a7db"
@@ -203,7 +203,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum sha2 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "1f31bcd58861be78a3779ba40cb84c1e9da0a650ae2ea5041a8d9cdb735b3389"
 "checksum strsim 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)" = "50c069df92e4b01425a8bf3576d5d417943a6a7272fbabaf5bd80b1aaa76442e"
 "checksum term_size 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "3f7f5f3f71b0040cecc71af239414c23fd3c73570f5ff54cf50e03cef637f2a0"
-"checksum termion 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "ce9884af069456867e19fd5648b8908d5c9378f586b2659aaa6f3a4088fdb867"
+"checksum termion 1.1.3 (registry+https://github.com/rust-lang/crates.io-index)" = "d94a5aea537a27dd9412585d7d77f2c382a2361f2b6a7cf0a6a56ea04aa5b71a"
 "checksum typenum 1.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "8f54860ca0a4135b6f05a1f439055a9a68e819b9ec3eda10964be1119b033c91"
 "checksum unicode-segmentation 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "b905d0fc2a1f0befd86b0e72e31d1787944efef9d38b9358a9e92a69757f7e3b"
 "checksum unicode-width 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)" = "2d6722facc10989f63ee0e20a83cd4e1714a9ae11529403ac7e0afd069abc39e"

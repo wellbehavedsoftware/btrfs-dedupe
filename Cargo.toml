@@ -1,10 +1,10 @@
 [package]
 name = "btrfs-dedupe"
-version = "0.1.0"
+version = "1.0.0"
 authors = [ "James Pharaoh <james@pharaoh.uk>" ]
 
 [dependencies]
 btrfs = "1.0"
-clap = "*"
-sha2 = "*"
+clap = "2.18"
+sha2 = "0.2"
 termion = "1.1"
