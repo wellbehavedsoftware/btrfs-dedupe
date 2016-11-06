@@ -2,7 +2,7 @@
 name = "btrfs-dedupe"
 version = "1.0.1"
 description = "BTRFS whole-file deduplication tool"
-license = "Apache-2.0"
+license = "MIT"
 homepage = "https://gitlab.wellbehavedsoftware.com/well-behaved-software/wbs-backup/tree/master/btrfs-dedupe"
 repository = "https://gitlab.wellbehavedsoftware.com/well-behaved-software/wbs-backup/tree/master/btrfs-dedupe"
 
