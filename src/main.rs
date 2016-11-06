@@ -58,6 +58,14 @@ fn parse_arguments (
 	let argument_matches = (
 		clap::App::new ("Btrfs Dedupe")
 
+		.about (
+			"Deduplicates identical files on BTRFS file systems.\n\nPlease \
+			visit https://gitlab.wellbehavedsoftware.com/well-behaved-software\
+			/wbs-backup/tree/master/btrfs-dedupe for more information.")
+
+		.author (
+			"James Pharaoh <james@wellbehavedsoftware.com")
+
 		.arg (
 			clap::Arg::with_name ("match-filename")
 				.long ("match-filename")
