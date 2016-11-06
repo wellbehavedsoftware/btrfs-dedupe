@@ -8,6 +8,12 @@ authors = [
 	"James Pharaoh <james@pharaoh.uk>",
 ]
 
+include = [
+	"Cargo.toml",
+	"README.md",
+	"src/**/*",
+]
+
 [dependencies]
 btrfs = "1.0"
 clap = "2.18"
