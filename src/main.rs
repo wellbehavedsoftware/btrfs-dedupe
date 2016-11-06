@@ -67,6 +67,7 @@ fn parse_arguments (
 		.arg (
 			clap::Arg::with_name ("root-path")
 				.multiple (true)
+				.value_name ("PATH")
 				.help ("Root path to scan for files")
 		)
 
