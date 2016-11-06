@@ -137,15 +137,20 @@ fn main_real (
 
 	// perform a checksum on each one
 
-	let (filename_and_checksum_lists, checksum_error_count) =
+	let (hash_lists, checksum_error_count) =
 		examine::split_by_hash (
 			output,
 			file_metadata_lists);
 
 	output.message (
 		& format! (
-			"Found {} filenames and checksums that coincide",
-			filename_and_checksum_lists.len ()));
+			"Found {} {} that coincide",
+			hash_lists.len (),
+			if arguments.match_filename {
+				"filenames and hashes"
+			} else {
+				"checksums"
+			}));
 
 	if checksum_error_count > 0 {
 
@@ -156,14 +161,14 @@ fn main_real (
 
 	}
 
-	if filename_and_checksum_lists.is_empty () {
+	if hash_lists.is_empty () {
 		return Ok (());
 	}
 
 	// deduplicate the matches
 
 	let mut progress: usize = 0;
-	let target = filename_and_checksum_lists.len ();
+	let target = hash_lists.len ();
 
 	let mut error_count: u64 = 0;
 
@@ -171,7 +176,7 @@ fn main_real (
 		"Deduplication progress: 0%");
 
 	for (_, paths)
-	in filename_and_checksum_lists.into_iter () {
+	in hash_lists.into_iter () {
 
 		let (first_path_slice, other_paths) =
 			paths.split_at (1);
