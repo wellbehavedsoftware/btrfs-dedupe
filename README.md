@@ -20,7 +20,8 @@ It is also available from the following locations:
 * [Github]
 (https://github.com/wellbehavedsoftware/wbs-backup/tree/master/btrfs-dedupe) —
 this is a clone of the gitlab repository, where bug reports etc should be made.
-Pull requests are welcome here, but issues should be tracked at gitlab (above).
+Pull requests are welcome here, but issues should be reported [here]
+(https://gitlab.wellbehavedsoftware.com/well-behaved-software/wbs-backup/issues).
 
 * [WBS Dist](https://dist.wellbehavedsoftware.com/btrfs-dedupe/) — this contains
 binary packages for Ubuntu trusty and xenial.
