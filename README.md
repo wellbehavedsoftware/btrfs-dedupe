@@ -80,3 +80,21 @@ the concept which make it unsuitable for many cases.
 
 There is a [wiki page](https://btrfs.wiki.kernel.org/index.php/Deduplication)
 with general information about the state of deduplication in BTRFS.
+
+## Roadmap
+
+The following features are planned:
+
+* Maintain a database of file checksums and modification times, similar to
+bedup, in order to avoid checksumming files which have not (apparently) changed.
+
+* Use BTRFS metadata to identify changed files, by comparing to snapshots or
+perhaps some other internal data, to enable files which have the same mtime, but
+which have changed, to be rescanned even if they are in the database.
+
+* Use BTRFS metadata to identify if files are already deduplicated, and avoid
+invoking the ioctl. I'm not sure if this is done automatically, but the speed at
+which a repeat invocation runs makes me think that it is not.
+
+* Extra options to limit scans to a single filesystem, and to include/exclude
+files according to patterns.
