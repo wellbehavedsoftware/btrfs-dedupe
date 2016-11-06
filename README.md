@@ -48,7 +48,8 @@ I also have a tool which complements this, [RZBackup]
 (https://gitlab.wellbehavedsoftware.com/well-behaved-software/wbs-backup/tree/master/btrfs-dedupe).
 
 I also offer commercial backup solutions, with very competitive pricing. Please
-contact sales@wellbehavedsoftware.com for more information.
+contact [sales@wellbehavedsoftware.com](mailto:sales@wellbehavedsoftware.com)
+for more information.
 
 ## Usage
 
