@@ -33,6 +33,23 @@ to deduplicate the entire file for every match it finds. Optionally, it can
 match filenames as well as sizes; this may make the program run faster in some
 cases.
 
+*IMPORTANT CAVEAT* &mdash; I have read that there are race and/or error
+conditions which can cause filesystem corruption in the kernel implementation of
+the deduplication ioctl.
+
+I have personally experienced many "corrupted" BTRFS filesystems but have in
+almost every case been able to recover the data. The only exception to this was,
+I believe, caused by corruption of the underlying block device and, of course, I
+was able to detect the issue due to the integrity verification code in BTRFS and
+recover the file in question from my backup.
+
+If you don't have backups, I would recommend [ZBackup](http://zbackup.org/), and
+I also have a tool which complements this, [RZBackup]
+(https://gitlab.wellbehavedsoftware.com/well-behaved-software/wbs-backup/tree/master/btrfs-dedupe).
+
+I also offer commercial backup solutions, with very competitive pricing. Please
+contact sales@wellbehavedsoftware.com for more information.
+
 ## Usage
 
 From the built-in help:
