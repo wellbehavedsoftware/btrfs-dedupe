@@ -36,7 +36,9 @@ cases.
 
 *IMPORTANT CAVEAT* &mdash; I have read that there are race and/or error
 conditions which can cause filesystem corruption in the kernel implementation of
-the deduplication ioctl.
+the deduplication ioctl. I have also been told that this is not the case in the
+newest kernels, and can't find the original comment, so hopefully this is not an
+issue.
 
 I have personally experienced many "corrupted" BTRFS filesystems but have in
 almost every case been able to recover the data. The only exception to this was,
@@ -77,11 +79,11 @@ ARGS:
 
 There are two alternatives, of which I am aware:
 
-* [Duperemove](https://github.com/markfasheh/duperemove) — Performs a
-block-level hash on files and attempts to deduplicate parts of files. This is
-overkill for my purposes, although I have no reason to believe it does not work
-well. I believe it will be slower than this tool, since it does a far deeper
-analysis of file contents.
+* [Duperemove](https://github.com/markfasheh/duperemove) — Flexible tool which
+is capable of block- and file-level deduplication, highly configurable, and
+supports a database of previous mtimes and checksums to improve speed. This tool
+has improved substantially since I last looked into it, and so my information
+about it is incomplete.
 
 * [Bedup](https://github.com/g2p/bedup) — Performs a similar task to this tool,
 plus it keeps a database of files in order to avoid checksumming again. The main
