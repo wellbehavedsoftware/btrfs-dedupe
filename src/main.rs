@@ -193,7 +193,7 @@ fn main_real (
 		let first_path =
 			first_path_slice.into_iter ().next ().unwrap ();
 
-		for paths_chunk in other_paths.chunks (512) {
+		for paths_chunk in other_paths.chunks (64) {
 
 			match btrfs::deduplicate_files_with_source (
 				first_path,
