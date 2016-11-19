@@ -78,7 +78,7 @@ pub fn parse_arguments (
 				clap::Arg::with_name ("dedupe-batch-size")
 					.long ("dedupe-batch-size")
 					.value_name ("SIZE")
-					.default_value ("64MiB")
+					.default_value ("512MiB")
 					.help ("Amount of file data to deduplicate before writing \
 						database and sleeping")
 			)
@@ -87,7 +87,7 @@ pub fn parse_arguments (
 				clap::Arg::with_name ("dedupe-sleep-time")
 					.long ("dedupe-sleep-time")
 					.value_name ("SECONDS")
-					.default_value ("5")
+					.default_value ("1")
 					.help ("Amount of time to sleep between deduplication \
 						batches")
 			)
