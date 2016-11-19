@@ -1,4 +1,5 @@
 [package]
+
 name = "btrfs-dedupe"
 version = "1.0.2"
 description = "BTRFS whole-file deduplication tool"
@@ -17,8 +18,21 @@ include = [
 	"src/**/*",
 ]
 
+build = "build.rs"
+
+[build-dependencies]
+
+serde_codegen = "0.8"
+
 [dependencies]
+
 btrfs = "1.0"
 clap = "2.18"
+output = "0.1"
+rustc-serialize = "0.3"
+serde = "0.8"
+serde_json = "0.8"
 sha2 = "0.2"
-termion = "1.1"
+time = "0.1"
+
+# ex: noet ts=4 filetype=toml

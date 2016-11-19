@@ -1,1 +1,0 @@
-../../../shared/misc/stderr.rs

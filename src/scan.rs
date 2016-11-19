@@ -1,32 +1,39 @@
 #![ allow (unused_parens) ]
 
 use std::fs;
-use std::path::Path;
+use std::fs::DirEntry;
+use std::io;
+use std::os::unix::fs::MetadataExt;
 use std::path::PathBuf;
+use std::rc::Rc;
 
-use misc::*;
 use output::Output;
-use types::*;
 
-fn scan_directory_internal <AsPath: AsRef <Path>> (
+use arguments::*;
+use misc::*;
+use storage::*;
+
+fn scan_directory_internal (
 	arguments: & Arguments,
 	output: & mut Output,
-	directory: AsPath,
-	file_metadata_lists: & mut FileMetadataLists,
+	directory: Rc <PathBuf>,
+	root_path: Rc <PathBuf>,
+	in_iterator: & mut FileDatabaseIntoIterator,
+	out_database: & mut FileDatabase,
 	progress: & mut u64,
 ) -> Result <(), String> {
 
 	let directory =
 		directory.as_ref ();
 
-	for entry_result
-	in try! (
+	let entry_results: Vec <io::Result <DirEntry>> =
+		try! (
 
 		io_result (
 			fs::read_dir (
 				directory),
 		).map_err (
-			|error|			
+			|error|
 
 			format! (
 				"Error reading directory: {:?}: {}",
@@ -35,9 +42,14 @@ fn scan_directory_internal <AsPath: AsRef <Path>> (
 
 		)
 
-	) {
+	).collect ();
 
-		let entry =
+	let mut entries: Vec <DirEntry> =
+		Vec::new ();
+
+	for entry_result in entry_results.into_iter () {
+
+		entries.push (
 			try! (
 
 			io_result (
@@ -51,7 +63,77 @@ fn scan_directory_internal <AsPath: AsRef <Path>> (
 
 			)
 
-		);
+		));
+
+	}
+
+	entries.sort_by_key (
+		|entry|
+
+		entry.file_name ()
+
+	);
+
+	let mut entry_iterator =
+		entries.into_iter ().peekable ();
+
+	loop {
+
+		{
+
+			let entry_next =
+				entry_iterator.peek ();
+
+			if entry_next.is_none () {
+				break;
+			}
+
+		}
+
+		let entry =
+			entry_iterator.next ().unwrap ();
+
+		let entry_path =
+			Rc::new (
+				entry.path ());
+
+		loop {
+
+			let exists = {
+
+				let in_next_option =
+					in_iterator.peek ();
+
+				if in_next_option.is_none () {
+					break;
+				}
+
+				let in_next =
+					in_next_option.unwrap ();
+
+				let in_next_path =
+					in_next.path.clone ();
+
+				if in_next_path >= entry_path {
+					break;
+				}
+
+				in_next_path.exists ()
+
+			};
+
+			if exists {
+
+				out_database.insert_direct (
+					in_iterator.next ().unwrap ());
+
+			} else {
+
+				in_iterator.next ();
+
+			}
+
+		}
 
 		let metadata =
 			try! (
@@ -89,32 +171,79 @@ fn scan_directory_internal <AsPath: AsRef <Path>> (
 				scan_directory_internal (
 					arguments,
 					output,
-					entry.path (),
-					file_metadata_lists,
+					entry_path,
+					root_path.clone (),
+					in_iterator,
+					out_database,
 					progress));
 
 		} else if file_type.is_file () {
 
-			let paths =
-				file_metadata_lists.entry (
-					FileMetadata {
+			let exists = {
 
-						filename: if arguments.match_filename {
-							Some (
-								PathBuf::from (
-									entry.file_name ())
-							)
-						} else { None },
+				let in_next_option =
+					in_iterator.peek ();
 
-						size: metadata.len (),
+				if in_next_option.is_some () {
 
-					},
-				).or_insert (
-					Vec::new (),
+					let in_next =
+						in_next_option.unwrap ();
+
+					let in_next_path =
+						in_next.path.clone ();
+
+					in_next_path == entry_path
+
+				} else {
+
+					false
+
+				}
+
+			};
+
+			if exists {
+
+				let existing_file_data =
+					in_iterator.next ().unwrap ();
+
+				let changed = (
+
+					metadata.len () !=
+						existing_file_data.size
+
+				||
+
+					metadata.mtime () !=
+						existing_file_data.mtime
+
 				);
 
-			paths.push (
-				entry.path ());
+				if changed {
+
+					out_database.insert_update_metadata (
+						& existing_file_data,
+						root_path.clone (),
+						& metadata,
+					);
+
+				} else {
+
+					out_database.insert_direct (
+						existing_file_data)
+
+				}
+
+			} else {
+
+				out_database.insert_new (
+					Rc::new (
+						entry.path ()),
+					root_path.clone (),
+					& metadata,
+				);
+
+			}
 
 		} else {
 
@@ -142,43 +271,73 @@ fn scan_directory_internal <AsPath: AsRef <Path>> (
 
 }
 
-/*
-pub fn scan_directory <AsPath: AsRef <Path>> (
-	directory: AsPath,
-) -> Result <FilenameAndSizeCounts, String> {
-
-	let mut result: FilenameAndSizeCounts =
-		FilenameAndSizeCounts::new ();
-
-	try! (
-		scan_directory_internal (
-			directory,
-			& mut result));
-
-	Ok (result)
-
-}
-*/
-
 pub fn scan_directories (
 	arguments: & Arguments,
 	output: & mut Output,
-) -> Result <FileMetadataLists, String> {
+	previous_database: FileDatabase,
+) -> Result <FileDatabase, String> {
 
-	let mut result: FileMetadataLists =
-		FileMetadataLists::new ();
+	let mut new_database: FileDatabase =
+		FileDatabase::new ();
 
 	let mut progress: u64 = 0;
 
-	for directory in & arguments.root_paths {
+	let previous_database_iterator =
+		previous_database.into_iter ();
+
+	let mut previous_database_iterator =
+		previous_database_iterator.peekable ();
+
+	for root_path in & arguments.root_paths {
+
+		let root_path =
+			new_database.get_path (
+				root_path.clone ());
+
+		loop {
+
+			{
+
+				let existing_file_data_option =
+					previous_database_iterator.peek ();
+
+				if existing_file_data_option.is_none () {
+					break;
+				}
+
+				let existing_file_data =
+					existing_file_data_option.unwrap ();
+
+				let existing_file_path =
+					& existing_file_data.path;
+
+				if * existing_file_path >= root_path {
+					break;
+				}
+
+			}
+
+			new_database.insert_direct (
+				previous_database_iterator.next ().unwrap ());
+
+		}
 
 		try! (
 			scan_directory_internal (
 				arguments,
 				output,
-				directory,
-				& mut result,
+				root_path.clone (),
+				root_path.clone (),
+				& mut previous_database_iterator,
+				& mut new_database,
 				& mut progress));
+
+	}
+
+	for existing_file_data_ref in previous_database_iterator {
+
+		new_database.insert_direct (
+			existing_file_data_ref.clone ());
 
 	}
 
@@ -186,15 +345,15 @@ pub fn scan_directories (
 
 	output.message (
 		& format! (
-			"Found {} unique {}",
-			result.len (),
-			if arguments.match_filename {
-				"filenames and sizes"
-			} else {
-				"file sizes"
-			}));
+			"Scanned {} files",
+			progress));
 
-	Ok (result)
+	output.message (
+		& format! (
+			"Total {} files in database",
+			new_database.len ()));
+
+	Ok (new_database)
 
 }
 
