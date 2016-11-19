@@ -15,6 +15,8 @@ It is hosted at [btrfs-dedupe.com]
 
 It is also available from the following locations:
 
+* [WBS Gitlab](https://github.com/wellbehavedsoftware/btrfs-dedupe)
+
 * [Crates.io](https://crates.io/crates/btrfs-dedupe)
 
 * [Github]
