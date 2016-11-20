@@ -115,8 +115,8 @@ impl FileDeduper {
 
 					output.status (
 						& format! (
-							"Defragment: {:?} (TODO)",
-							file_data.path));
+							"Defragment: {} (TODO)",
+							file_data.path.to_string_lossy ()));
 
 					true
 
@@ -124,9 +124,9 @@ impl FileDeduper {
 
 					output.status (
 						& format! (
-							"Deduplicate: {:?} -> {:?}",
-							file_data.path,
-							target_path));
+							"Deduplicate: {} -> {}",
+							file_data.path.to_string_lossy (),
+							target_path.to_string_lossy ()));
 
 					btrfs::deduplicate_files_with_source (
 						target_path.as_ref (),

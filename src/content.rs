@@ -105,8 +105,8 @@ impl ContentHasher {
 
 				output.status (
 					& format! (
-						"Content hash: {:?}",
-						file_data.path));
+						"Content hash: {}",
+						file_data.path.to_string_lossy ()));
 
 				let content_hash_time =
 					time::get_time ();

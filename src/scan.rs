@@ -37,8 +37,8 @@ fn scan_directory_internal (
 			|error|
 
 			format! (
-				"Error reading directory: {:?}: {}",
-				directory,
+				"Error reading directory: {}: {}",
+				directory.to_string_lossy (),
 				error)
 
 		)
@@ -145,8 +145,8 @@ fn scan_directory_internal (
 				|error|
 
 				format! (
-					"Error reading metadata for: {:?}: {}",
-					entry.path (),
+					"Error reading metadata for: {}: {}",
+					entry.path ().to_string_lossy (),
 					error)
 
 			)
@@ -250,9 +250,9 @@ fn scan_directory_internal (
 		} else {
 
 			stderrln! (
-				"Ignoring unknown filetype: {:?}: {:?}",
+				"Ignoring unknown filetype: {:?}: {}",
 				file_type,
-				entry.path ());
+				entry.path ().to_string_lossy ());
 
 		};
 
@@ -260,8 +260,8 @@ fn scan_directory_internal (
 
 			output.status (
 				& format! (
-					"Scanning filesystem... {:?}",
-					entry.path ()));
+					"Scanning filesystem: {}",
+					entry.path ().to_string_lossy ()));
 
 		}
 
@@ -305,8 +305,8 @@ pub fn scan_directories (
 				|error|
 
 				format! (
-					"Error reading metadata for: {:?}: {}",
-					root_path.as_ref (),
+					"Error reading metadata for: {}: {}",
+					root_path.to_string_lossy (),
 					error)
 
 			)

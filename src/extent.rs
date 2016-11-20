@@ -110,8 +110,8 @@ impl ExtentHasher {
 
 				output.status (
 					& format! (
-						"Extent hash: {:?}",
-						file_data.path));
+						"Extent hash: {}",
+						file_data.path.to_string_lossy ()));
 
 				let extent_hash_time =
 					time::get_time ();
@@ -287,8 +287,8 @@ pub fn print_extents_command (
 
 		output.message (
 			& format! (
-				"Extents for {:?}",
-				path));
+				"Extents for {}",
+				path.to_string_lossy ()));
 
 		let file_extents =
 			try! (
