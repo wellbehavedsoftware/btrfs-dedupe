@@ -18,6 +18,7 @@ fn scan_directory_internal (
 	output: & mut Output,
 	directory: Rc <PathBuf>,
 	root_path: Rc <PathBuf>,
+	device_id: u64,
 	in_iterator: & mut FileDatabaseIntoIterator,
 	out_database: & mut FileDatabase,
 	progress: & mut u64,
@@ -159,7 +160,7 @@ fn scan_directory_internal (
 
 			file_type.is_symlink ()
 
-			|| metadata.len () == 0
+			|| metadata.dev () != device_id
 
 		) {
 
@@ -173,6 +174,7 @@ fn scan_directory_internal (
 					output,
 					entry_path,
 					root_path.clone (),
+					device_id,
 					in_iterator,
 					out_database,
 					progress));
@@ -294,6 +296,23 @@ pub fn scan_directories (
 			new_database.get_path (
 				root_path.clone ());
 
+		let metadata =
+			try! (
+
+			fs::symlink_metadata (
+				root_path.as_ref (),
+			).map_err (
+				|error|
+
+				format! (
+					"Error reading metadata for: {:?}: {}",
+					root_path.as_ref (),
+					error)
+
+			)
+
+		);
+
 		loop {
 
 			{
@@ -328,6 +347,7 @@ pub fn scan_directories (
 				output,
 				root_path.clone (),
 				root_path.clone (),
+				metadata.dev (),
 				& mut previous_database_iterator,
 				& mut new_database,
 				& mut progress));
