@@ -405,6 +405,16 @@ fn perform_deduplication (
 					+ file_deduper.num_remaining,
 				file_deduper.num_remaining));
 
+		// write out updated database
+
+		try! (
+			write_database (
+				& arguments,
+				output,
+				& file_database));
+
+		// sleep a while to reduce load
+
 		output.status (
 			& format! (
 				"Sleeping for {} seconds",
@@ -415,14 +425,6 @@ fn perform_deduplication (
 				arguments.dedupe_sleep_time));
 
 		output.clear_status ();
-
-		// write out updated database
-
-		try! (
-			write_database (
-				& arguments,
-				output,
-				& file_database));
 
 	}
 
