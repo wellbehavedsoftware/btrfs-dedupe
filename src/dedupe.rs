@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::thread;
-use std::time::Duration;
 
 use btrfs;
 
@@ -412,19 +410,6 @@ fn perform_deduplication (
 				& arguments,
 				output,
 				& file_database));
-
-		// sleep a while to reduce load
-
-		output.status (
-			& format! (
-				"Sleeping for {} seconds",
-				arguments.dedupe_sleep_time));
-
-		thread::sleep (
-			Duration::from_secs (
-				arguments.dedupe_sleep_time));
-
-		output.clear_status ();
 
 	}
 

@@ -19,7 +19,6 @@ pub struct Arguments {
 	pub content_hash_batch_size: u64,
 	pub extent_hash_batch_size: u64,
 	pub dedupe_batch_size: u64,
-	pub dedupe_sleep_time: u64,
 	pub root_paths: Vec <Rc <PathBuf>>,
 }
 
@@ -69,7 +68,7 @@ pub fn parse_arguments (
 				clap::Arg::with_name ("extent-hash-batch-size")
 					.long ("extent-hash-batch-size")
 					.value_name ("SIZE")
-					.default_value ("8GiB")
+					.default_value ("16GiB")
 					.help ("Amount of file extent data to hash before writing \
 						database")
 			)
@@ -78,18 +77,9 @@ pub fn parse_arguments (
 				clap::Arg::with_name ("dedupe-batch-size")
 					.long ("dedupe-batch-size")
 					.value_name ("SIZE")
-					.default_value ("512MiB")
+					.default_value ("2GiB")
 					.help ("Amount of file data to deduplicate before writing \
-						database and sleeping")
-			)
-
-			.arg (
-				clap::Arg::with_name ("dedupe-sleep-time")
-					.long ("dedupe-sleep-time")
-					.value_name ("SECONDS")
-					.default_value ("1")
-					.help ("Amount of time to sleep between deduplication \
-						batches")
+						database")
 			)
 
 			.arg (
@@ -218,32 +208,6 @@ pub fn parse_arguments (
 
 		).unwrap ();
 
-		let dedupe_sleep_time = (
-
-			dedupe_matches.value_of (
-				"dedupe-sleep-time",
-			).unwrap ().parse::<u64> ()
-
-		).map_err (
-			|error|
-
-			clap::Error {
-
-				message:
-					format! (
-						"Can't parse --dedupe-sleep-time: {}",
-						error),
-
-				kind:
-					clap::ErrorKind::InvalidValue,
-
-				info:
-					None,
-
-			}.exit ()
-
-		).unwrap ();
-
 		let minimum_file_size = (
 
 			parse_size (
@@ -304,7 +268,6 @@ pub fn parse_arguments (
 			content_hash_batch_size: content_hash_batch_size,
 			extent_hash_batch_size: extent_hash_batch_size,
 			dedupe_batch_size: dedupe_batch_size,
-			dedupe_sleep_time: dedupe_sleep_time,
 			root_paths: root_paths,
 		}
 
@@ -341,7 +304,6 @@ pub fn parse_arguments (
 			content_hash_batch_size: 0,
 			extent_hash_batch_size: 0,
 			dedupe_batch_size: 0,
-			dedupe_sleep_time: 0,
 			root_paths: paths,
 		}
 
