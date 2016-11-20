@@ -742,7 +742,7 @@ pub fn write_database (
 	let database_path =
 		arguments.database_path.as_ref ().unwrap ();
 
-	output.message (
+	output.status (
 		& format! (
 			"Writing database to {}",
 			database_path.to_string_lossy ()));
@@ -804,6 +804,8 @@ pub fn write_database (
 
 		)
 	);
+
+	output.clear_status ();
 
 	Ok (())
 
