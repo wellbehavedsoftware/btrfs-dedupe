@@ -28,6 +28,7 @@ serde_codegen = "0.8"
 
 btrfs = "1.0"
 clap = "2.18"
+flate2 = "0.2"
 output = "0.1"
 rustc-serialize = "0.3"
 serde = "0.8"

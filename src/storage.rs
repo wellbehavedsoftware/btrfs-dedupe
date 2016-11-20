@@ -21,6 +21,10 @@ use std::os::unix::ffi::OsStrExt;
 use std::path::PathBuf;
 use std::rc::Rc;
 
+use flate2::Compression;
+use flate2::read::GzDecoder;
+use flate2::write::GzEncoder;
+
 use output::Output;
 
 use rustc_serialize::hex::ToHex;
@@ -440,7 +444,7 @@ impl FileDatabase {
 
 			try! (
 
-				database_output.write (
+				database_output.write_all (
 					file_data_json.as_bytes (),
 				).map_err (
 					|io_error|
@@ -476,6 +480,7 @@ impl FileDatabase {
 
 	pub fn read (
 		arguments: & Arguments,
+		_output: & mut Output,
 		database_input: & mut Read,
 	) -> Result <FileDatabase, String> {
 
@@ -698,7 +703,7 @@ pub fn init_database (
 					.unwrap ()
 					.to_string_lossy ()));
 
-		let mut database_file = try! (
+		let database_file = try! (
 
 			File::open (
 				arguments.database_path
@@ -715,9 +720,33 @@ pub fn init_database (
 
 		);
 
+		let mut database_reader = try! (
+
+			GzDecoder::new (
+				database_file,
+			).map_err (
+				|io_error|
+
+				format! (
+					"Error reading database: {}",
+					io_error.description ())
+
+			)
+
+		);
+
 		FileDatabase::read (
 			arguments,
-			& mut database_file)
+			output,
+			& mut database_reader,
+		).map_err (
+			|error_string|
+
+			format! (
+				"Error reading database: {}",
+				error_string)
+
+		)
 
 	} else {
 
@@ -760,7 +789,7 @@ pub fn write_database (
 			OsStr::from_bytes (
 				& database_path_temp_bytes));
 
-	let mut database_file = try! (
+	let database_file = try! (
 
 		File::create (
 			& database_path_temp,
@@ -775,11 +804,31 @@ pub fn write_database (
 
 	);
 
-	try! (
-		file_database.write (
-			& mut database_file));
+	let mut database_writer =
+		GzEncoder::new (
+			database_file,
+			Compression::Fast);
 
 	try! (
+		file_database.write (
+			& mut database_writer));
+
+	let database_file = try! (
+
+		database_writer.finish (
+		).map_err (
+			|io_error|
+
+			format! (
+				"Error writing database: {}",
+				io_error.description ())
+
+		)
+
+	);
+
+	try! (
+
 		database_file.sync_data (
 		).map_err (
 			|io_error|
@@ -789,6 +838,7 @@ pub fn write_database (
 				io_error.description ())
 
 		)
+
 	);
 
 	try! (

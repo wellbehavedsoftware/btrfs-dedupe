@@ -7,6 +7,7 @@ extern crate clap;
 extern crate output;
 
 extern crate btrfs;
+extern crate flate2;
 extern crate rustc_serialize;
 extern crate serde_json;
 extern crate sha2;
@@ -41,6 +42,19 @@ fn main () {
 	let arguments =
 		parse_arguments ();
 
+	let exit_code =
+		main_real (
+			& arguments);
+
+	process::exit (
+		exit_code);
+
+}
+
+fn main_real (
+	arguments: & Arguments,
+) -> i32 {
+
 	let mut output =
 		RawConsole::new ().unwrap ();
 
@@ -51,19 +65,20 @@ fn main () {
 
 		Command::Dedupe =>
 			dedupe_command (
-				& arguments,
+				arguments,
 				& mut output),
 
 		Command::PrintExtents =>
 			print_extents_command (
-				& arguments,
+				arguments,
 				& mut output),
 
 	};
 
 	match command_result {
 
-		Ok (_) => (),
+		Ok (_) =>
+			0,
 
 		Err (error_message) => {
 
@@ -71,10 +86,10 @@ fn main () {
 
 			output.message (
 				& format! (
-					"Error: {}",
+					"{}",
 					error_message));
 
-			process::exit (1);
+			1
 
 		},
 
