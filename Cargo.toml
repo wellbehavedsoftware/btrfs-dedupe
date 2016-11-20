@@ -26,7 +26,7 @@ serde_codegen = "0.8"
 
 [dependencies]
 
-btrfs = "1.0"
+btrfs = "1.2"
 clap = "2.18"
 flate2 = "0.2"
 output = "0.2"
