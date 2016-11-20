@@ -247,13 +247,6 @@ fn scan_directory_internal (
 
 			}
 
-		} else {
-
-			stderrln! (
-				"Ignoring unknown filetype: {:?}: {}",
-				file_type,
-				entry.path ().to_string_lossy ());
-
 		};
 
 		if * progress % 0x1000 == 0 {
