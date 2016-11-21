@@ -133,6 +133,20 @@ impl FileDatabase {
 		file_data: FileDataRef,
 	) {
 
+		if let Some (last_file_data) =
+			self.file_data_ordered.back () {
+
+			if file_data.path <= last_file_data.path {
+
+				panic! (
+					"Tried to insert {:?} after {:?}",
+					file_data.path,
+					last_file_data.path);
+
+			}
+
+		}
+
 		let parent =
 			Rc::new (
 				PathBuf::from (
