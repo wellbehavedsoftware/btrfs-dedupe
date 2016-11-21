@@ -87,7 +87,10 @@ impl ContentHasher {
 
 				num_ignored += 1;
 
-			} else if file_data.content_hash != ZERO_HASH {
+			} else if (
+				file_data.content_hash != ZERO_HASH
+				|| file_data.size == 0
+			) {
 
 				new_database.insert_direct (
 					file_data);
