@@ -297,45 +297,60 @@ impl <'a> DirectoryScanner <'a> {
 
 			}
 
-			let metadata =
+			let entry_metadata =
 				try! (
 
 				fs::symlink_metadata (
-					entry.path (),
+					entry_path.as_ref (),
 				).map_err (
 					|error|
 
 					format! (
 						"Error reading metadata for: {}: {}",
-						entry.path ().to_string_lossy (),
+						entry_path.to_string_lossy (),
 						error)
 
 				)
 
 			);
 
-			let file_type =
-				metadata.file_type ();
+			let entry_file_type =
+				entry_metadata.file_type ();
+
+			let (temp_root_path, temp_device_id) =
+				if self.root_paths_unordered.contains (
+					& entry_path) {
+
+				(
+					entry_path.clone (),
+					entry_metadata.dev (),
+				)
+
+			} else {
+
+				(
+					root_path.clone (),
+					device_id,
+				)
+
+			};
 
 			if (
-
-				file_type.is_symlink ()
-
-				|| metadata.dev () != device_id
-
+				entry_file_type.is_symlink ()
+				|| entry_metadata.dev () != temp_device_id
 			) {
 
 				// ignore
 
-			} else if file_type.is_dir () {
+			} else if entry_file_type.is_dir () {
 
 				try! (
 					self.scan_directory_internal (
-						entry_path,
-						root_path.clone (),
-						device_id));
+						entry_path.clone (),
+						temp_root_path,
+						temp_device_id));
 
-			} else if file_type.is_file () {
+			} else if entry_file_type.is_file () {
 
 				let exists = {
 
@@ -367,12 +382,12 @@ impl <'a> DirectoryScanner <'a> {
 
 					let changed = (
 
-						metadata.len () !=
+						entry_metadata.len () !=
 							existing_file_data.size
 
 					||
 
-						metadata.mtime () !=
+						entry_metadata.mtime () !=
 							existing_file_data.mtime
 
 					);
@@ -381,8 +396,8 @@ impl <'a> DirectoryScanner <'a> {
 
 						self.out_database.insert_update_metadata (
 							& existing_file_data,
-							root_path.clone (),
-							& metadata,
+							temp_root_path.clone (),
+							& entry_metadata,
 						);
 
 					} else {
@@ -395,10 +410,9 @@ impl <'a> DirectoryScanner <'a> {
 				} else {
 
 					self.out_database.insert_new (
-						Rc::new (
-							entry.path ()),
-						root_path.clone (),
-						& metadata,
+						entry_path.clone (),
+						temp_root_path.clone (),
+						& entry_metadata,
 					);
 
 				}
@@ -410,7 +424,7 @@ impl <'a> DirectoryScanner <'a> {
 				self.output.status (
 					& format! (
 						"Scanning filesystem: {}",
-						entry.path ().to_string_lossy ()));
+						entry_path.to_string_lossy ()));
 
 			}
 
