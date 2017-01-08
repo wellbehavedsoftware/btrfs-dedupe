@@ -34,8 +34,10 @@ The current version of this utility is designed for batch operation, and it uses
 a state file to enable successive executions to operate incrementally. It will
 first scan the file system and create an index of all files present, it then
 takes an SHA256 checksum for each file, then it takes an SHA256 checksum of a
-representation of the file extent map for each file. Finally it will execute the
-deduplicate ioctl for every file with a matching extent map.
+representation of the file extent map for each file. Finally, for every set of
+two or more files with a matching content hash but different extent hashes, it
+will execute the defragment ioctl for the first, then the deduplicate ioctl
+against this file for every other.
 
 It saves its state regularly to a file which is simply a list of JSON entries,
 one for each file present, along with some metadata (size, mtime, etc), the
@@ -83,7 +85,52 @@ for more information.
 
 ## Usage
 
-TODO
+From the built-in help `btrfs-dedupe dedupe --help`:
+
+```
+USAGE:
+    btrfs-dedupe dedupe [OPTIONS] [<PATH>]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+        --content-hash-batch-size <SIZE>
+            Amount of file contents data to hash before writing database
+            [default: 2GiB]
+        --database <PATH>
+            Database path to store metadata and hashes
+        --dedupe-batch-size <SIZE>
+            Amount of file data to deduplicate before writing database
+            [default: 64GiB]
+        --extent-hash-batch-size <SIZE>
+            Amount of file extent data to hash before writing database
+            [default: 512GiB]
+        --minimum-file-size <SIZE>
+            Minimum file size to consider for deduplication [default: 1KiB]
+
+ARGS:
+    <PATH>...    Root path to scan for files
+
+```
+
+In general, you need to choose a location for your database, for example
+`/var/cache/btrfs-dedupe/database.gz`, and make sure this directory exists. I'm
+assuming you are going to run as root.
+
+```sh
+mkdir /var/cache/btrfs-dedupe
+```
+
+Then you can run the dedupe process on a regular basis. It's a good idea to do
+so before you make any read-only snapshots. For example, I make snapshots
+nightly, and run the dedupe process beforehand to ensure that my snapshots don't
+contain duplicated data.
+
+```sh
+btrfs-dedupe dedupe --database /var/cache/btrfs-dedupe/database.gz
+```
 
 ## Roadmap
 
@@ -91,11 +138,15 @@ The following features are planned:
 
 * Option to include/exclude files according to patterns.
 
-* Option to defragment files before deduplication.
-
 * Option to force update of stored data on a regular basis, for a subset of
   files which are selected in a periodic way (eg each file gets a forced recheck
   once every 'n' days, which can be configured).
+
+* Options to control defragmentation options, or to turn it off, and to enable
+  defragmentation for directories.
+
+Please let me know if you are keen to see any of these features, or if there is
+anything else you would like to see in btrfs-dedupe.
 
 ## Alternatives
 
