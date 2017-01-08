@@ -1,0 +1,42 @@
+#!/bin/bash
+
+set -euf -o pipefail
+
+source "/etc/lsb-release"
+source "etc/project-data"
+
+function get_version {
+
+	python <<-END
+		import toml
+		cargo = toml.loads (open ("Cargo.toml").read ())
+		print (cargo ["package"] ["version"])
+	END
+
+}
+
+version="$(get_version)"
+release="$(lsb_release --codename --short)"
+package="$name-$version-$release"
+
+cargo build --release
+
+rm -rf "work/$package"
+mkdir -p "work/$package"
+
+for content in "${binary_contents[@]}"; do
+	cp "$content" "work/$package/$(basename "$content")"
+done
+
+tar \
+	--create \
+	--xz \
+	--directory "work" \
+	--file "work/$package.tar.xz" \
+	"$package"
+
+scp \
+	"work/$package.tar.xz" \
+	"$target/$package.tar.xz"
+
+# ex: noet ts=4 filetype=sh

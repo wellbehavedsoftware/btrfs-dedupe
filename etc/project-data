@@ -1,7 +1,26 @@
 name="btrfs-dedupe"
 
-contents=(
-	"btrfs-dedupe"
+source_contents=(
+
+	"Cargo.lock"
+	"Cargo.toml"
+	"LICENSE"
+	"README.md"
+
+	"build.rs"
+
+	"etc"
+	"src"
+
+)
+
+binary_contents=(
+
+	"README.md"
+	"LICENSE"
+
+	"target/release/btrfs-dedupe"
+
 )
 
 target="ubuntu@kiara-dist.vpn.wellbehavedsoftware.com:dist/btrfs-dedupe"
