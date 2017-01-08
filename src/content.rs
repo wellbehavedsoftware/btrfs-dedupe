@@ -109,8 +109,8 @@ impl ContentHasher {
 
 			} else {
 
-				output.status (
-					& format! (
+				output.status_format (
+					format_args! (
 						"Content hash: {}",
 						file_data.path.to_string_lossy ()));
 
@@ -253,8 +253,8 @@ pub fn calculate_content_hashes (
 			break;
 		}
 
-		output.message (
-			& format! (
+		output.message_format (
+			format_args! (
 				"Hashed contents of {} out of {} files, {} remaining",
 				content_hasher.num_processed (),
 				content_hasher.num_to_process (),
@@ -270,8 +270,8 @@ pub fn calculate_content_hashes (
 
 	}
 
-	output.message (
-		& format! (
+	output.message_format (
+		format_args! (
 			"Hashed contents of {} files with {} errors, ignored {} with fresh \
 			hashes",
 			content_hasher.num_updated (),

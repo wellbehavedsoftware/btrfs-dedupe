@@ -50,6 +50,9 @@ pub struct FileData {
 	pub extent_hash: Hash,
 	pub extent_hash_time: i64,
 
+	pub defragment_time: i64,
+	pub deduplicate_time: i64,
+
 	pub mtime: i64,
 	pub ctime: i64,
 
@@ -207,6 +210,9 @@ impl FileDatabase {
 				extent_hash: ZERO_HASH,
 				extent_hash_time: 0,
 
+				defragment_time: 0,
+				deduplicate_time: 0,
+
 				mtime: metadata.mtime (),
 				ctime: metadata.ctime (),
 
@@ -248,6 +254,9 @@ impl FileDatabase {
 
 				extent_hash: ZERO_HASH,
 				extent_hash_time: 0,
+
+				defragment_time: existing_file_data.defragment_time,
+				deduplicate_time: existing_file_data.deduplicate_time,
 
 				mtime: new_metadata.mtime (),
 				ctime: new_metadata.ctime (),
@@ -292,6 +301,9 @@ impl FileDatabase {
 				extent_hash: ZERO_HASH,
 				extent_hash_time: 0,
 
+				defragment_time: existing_file_data.defragment_time,
+				deduplicate_time: existing_file_data.deduplicate_time,
+
 				mtime: existing_file_data.mtime,
 				ctime: existing_file_data.ctime,
 
@@ -335,6 +347,9 @@ impl FileDatabase {
 				extent_hash: new_extent_hash.unwrap_or (ZERO_HASH),
 				extent_hash_time: new_extent_hash_time,
 
+				defragment_time: 0,
+				deduplicate_time: 0,
+
 				mtime: existing_file_data.mtime,
 				ctime: existing_file_data.ctime,
 
@@ -375,6 +390,9 @@ impl FileDatabase {
 
 				extent_hash: ZERO_HASH,
 				extent_hash_time: 0,
+
+				defragment_time: existing_file_data.defragment_time,
+				deduplicate_time: existing_file_data.deduplicate_time,
 
 				mtime: existing_file_data.mtime,
 				ctime: existing_file_data.ctime,
@@ -430,6 +448,18 @@ impl FileDatabase {
 					None
 				} else {
 					Some (file_data.extent_hash_time)
+				},
+
+				defragment_time: if file_data.defragment_time == 0 {
+					None
+				} else {
+					Some (file_data.defragment_time)
+				},
+
+				deduplicate_time: if file_data.deduplicate_time == 0 {
+					None
+				} else {
+					Some (file_data.deduplicate_time)
 				},
 
 				mtime: file_data.mtime,
@@ -587,6 +617,12 @@ impl FileDatabase {
 				extent_hash_time:
 					file_data_record.extent_hash_time.unwrap_or (0),
 
+				defragment_time:
+					file_data_record.defragment_time.unwrap_or (0),
+
+				deduplicate_time:
+					file_data_record.deduplicate_time.unwrap_or (0),
+
 				mtime: file_data_record.mtime,
 				ctime: file_data_record.ctime,
 
@@ -709,8 +745,8 @@ pub fn init_database (
 
 	) {
 
-		output.message (
-			& format! (
+		output.message_format (
+			format_args! (
 				"Reading database from {}",
 				arguments.database_path
 					.as_ref ()
@@ -785,8 +821,8 @@ pub fn write_database (
 	let database_path =
 		arguments.database_path.as_ref ().unwrap ();
 
-	output.status (
-		& format! (
+	output.status_format (
+		format_args! (
 			"Writing database to {}",
 			database_path.to_string_lossy ()));
 

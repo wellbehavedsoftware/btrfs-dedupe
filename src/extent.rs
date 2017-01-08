@@ -108,8 +108,8 @@ impl ExtentHasher {
 
 			} else {
 
-				output.status (
-					& format! (
+				output.status_format (
+					format_args! (
 						"Extent hash: {}",
 						file_data.path.to_string_lossy ()));
 
@@ -235,8 +235,8 @@ pub fn calculate_extent_hashes (
 			break;
 		}
 
-		output.message (
-			& format! (
+		output.message_format (
+			format_args! (
 				"Hashed extents of {} out of {} files, {} remaining",
 				extent_hasher.num_updated
 					+ extent_hasher.num_errors,
@@ -255,8 +255,8 @@ pub fn calculate_extent_hashes (
 
 	}
 
-	output.message (
-		& format! (
+	output.message_format (
+		format_args! (
 			"Hashed extents of {} files, {} errors, skipped {}",
 			extent_hasher.num_updated,
 			extent_hasher.num_errors,
@@ -285,8 +285,8 @@ pub fn print_extents_command (
 
 	for path in arguments.root_paths.iter () {
 
-		output.message (
-			& format! (
+		output.message_format (
+			format_args! (
 				"Extents for {}",
 				path.to_string_lossy ()));
 
@@ -297,8 +297,8 @@ pub fn print_extents_command (
 
 		for file_extent in file_extents {
 
-			output.message (
-				& format! (
+			output.message_format (
+				format_args! (
 					"  {:?}",
 					file_extent));
 

@@ -1,39 +1,51 @@
 [package]
 
-name = "btrfs-dedupe"
-version = "1.0.2"
-description = "BTRFS whole-file deduplication tool"
-license = "MIT"
-homepage = "http://btrfs-dedupe.com"
-repository = "https://gitlab.wellbehavedsoftware.com/well-behaved-software/btrfs-dedupe"
+	name = "btrfs-dedupe"
+	version = "1.0.2"
+	description = "BTRFS whole-file deduplication tool"
+	license = "MIT"
+	homepage = "http://btrfs-dedupe.com"
+	repository = "https://gitlab.wellbehavedsoftware.com/well-behaved-software/btrfs-dedupe"
 
-authors = [
-	"James Pharaoh <james@pharaoh.uk>",
-]
+	authors = [
+		"James Pharaoh <james@pharaoh.uk>",
+	]
 
-include = [
-	"Cargo.toml",
-	"LICENSE",
-	"README.md",
-	"src/**/*",
-]
+	include = [
+		"Cargo.toml",
+		"LICENSE",
+		"README.md",
+		"src/**/*",
+	]
 
-build = "build.rs"
+	build = "build.rs"
 
 [build-dependencies]
 
-serde_codegen = "0.8"
+	serde_codegen = "0.8"
 
 [dependencies]
 
-btrfs = "1.2"
-clap = "2.18"
-flate2 = "0.2"
-output = "0.3"
-rustc-serialize = "0.3"
-serde = "0.8"
-serde_json = "0.8"
-sha2 = "0.2"
-time = "0.1"
+	btrfs = "1.2"
+	clap = "2.20"
+	flate2 = "0.2"
+	output = "0.4"
+	rustc-serialize = "0.3"
+	serde = "0.8"
+	serde_json = "0.8"
+	sha2 = "0.4"
+	time = "0.1"
+
+[profile.dev]
+
+	opt-level = 0
+	debug = true
+	lto = false
+
+[profile.release]
+
+	opt-level = 3
+	debug = false
+	lto = true
 
 # ex: noet ts=4 filetype=toml

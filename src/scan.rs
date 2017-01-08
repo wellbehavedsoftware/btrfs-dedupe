@@ -84,8 +84,8 @@ impl <'a> DirectoryScanner <'a> {
 				continue;
 			}
 
-			self.output.message (
-				& format! (
+			self.output.message_format (
+				format_args! (
 					"Scanning {}",
 					root_path.to_string_lossy ()));
 
@@ -156,13 +156,13 @@ impl <'a> DirectoryScanner <'a> {
 
 		self.output.clear_status ();
 
-		self.output.message (
-			& format! (
+		self.output.message_format (
+			format_args! (
 				"Scanned {} files",
 				self.progress));
 
-		self.output.message (
-			& format! (
+		self.output.message_format (
+			format_args! (
 				"Total {} files in database",
 				self.out_database.len ()));
 
@@ -421,8 +421,8 @@ impl <'a> DirectoryScanner <'a> {
 
 			if self.progress % 0x1000 == 0 {
 
-				self.output.status (
-					& format! (
+				self.output.status_format (
+					format_args! (
 						"Scanning filesystem: {}",
 						entry_path.to_string_lossy ()));
 

@@ -28,9 +28,6 @@ mod types;
 
 use std::process;
 
-use output::Output;
-use output::RawConsole;
-
 use arguments::*;
 use dedupe::*;
 use extent::*;
@@ -56,7 +53,7 @@ fn main_real (
 ) -> i32 {
 
 	let mut output =
-		RawConsole::new ().unwrap ();
+		output::open ();
 
 	// delegate to command
 
@@ -84,8 +81,8 @@ fn main_real (
 
 			output.clear_status ();
 
-			output.message (
-				& format! (
+			output.message_format (
+				format_args! (
 					"{}",
 					error_message));
 

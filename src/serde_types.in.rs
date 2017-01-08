@@ -20,6 +20,12 @@ pub struct FileDataRecord {
     #[ serde (skip_serializing_if = "Option::is_none") ]
 	pub extent_hash_time: Option <i64>,
 
+    #[ serde (skip_serializing_if = "Option::is_none") ]
+	pub defragment_time: Option <i64>,
+
+    #[ serde (skip_serializing_if = "Option::is_none") ]
+	pub deduplicate_time: Option <i64>,
+
 	pub mtime: i64,
 	pub ctime: i64,
 

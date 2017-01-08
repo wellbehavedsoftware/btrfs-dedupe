@@ -111,17 +111,22 @@ impl FileDeduper {
 				let success =
 					if * target_path == * file_data.path {
 
-					output.status (
-						& format! (
-							"Defragment: {} (TODO)",
+					output.status_format (
+						format_args! (
+							"Defragment: {}",
 							file_data.path.to_string_lossy ()));
 
-					true
+					btrfs::defragment_file (
+						file_data.path.as_ref (),
+						1,
+						btrfs::CompressionType::Lzo,
+						true,
+					).is_ok ()
 
 				} else {
 
-					output.status (
-						& format! (
+					output.status_format (
+						format_args! (
 							"Deduplicate: {} -> {}",
 							file_data.path.to_string_lossy (),
 							target_path.to_string_lossy ()));
@@ -182,8 +187,8 @@ fn build_dedupe_map (
 	let unique_hash_count =
 		deduplication_candidates.len ();
 
-	output.message (
-		& format! (
+	output.message_format (
+		format_args! (
 			"Found {} unique hashes",
 			unique_hash_count));
 
@@ -200,8 +205,8 @@ fn build_dedupe_map (
 	let duplicated_file_count =
 		deduplication_candidates.len ();
 
-	output.message (
-		& format! (
+	output.message_format (
+		format_args! (
 			"Found {} unique hashes with multiple instances",
 			duplicated_file_count));
 
@@ -232,8 +237,8 @@ fn build_dedupe_map (
 	let physical_duplicated_file_count =
 		deduplication_candidates.len ();
 
-	output.message (
-		& format! (
+	output.message_format (
+		format_args! (
 			"Found {} unique hashes which can be deduplicated",
 			physical_duplicated_file_count));
 
@@ -261,8 +266,8 @@ fn build_dedupe_map (
 	let physical_not_deduplicated_file_count =
 		deduplication_candidates.len ();
 
-	output.message (
-		& format! (
+	output.message_format (
+		format_args! (
 			"Found {} unique hashes which need deduplication",
 			physical_not_deduplicated_file_count));
 
@@ -290,8 +295,8 @@ fn build_dedupe_map (
 
 	}).collect ();
 
-	output.message (
-		& format! (
+	output.message_format (
+		format_args! (
 			"Found {} files to deduplicate",
 			dedupe_map.len ()));
 
@@ -393,8 +398,8 @@ fn perform_deduplication (
 			break;
 		}
 
-		output.message (
-			& format! (
+		output.message_format (
+			format_args! (
 				"Deduped {} out of {} files, {} remaining",
 				file_deduper.num_updated
 					+ file_deduper.num_errors,
@@ -413,8 +418,8 @@ fn perform_deduplication (
 
 	}
 
-	output.message (
-		& format! (
+	output.message_format (
+		format_args! (
 			"Deduped {} files with {} errors",
 			file_deduper.num_updated,
 			file_deduper.num_errors));
