@@ -68,7 +68,7 @@ pub fn parse_arguments (
 				clap::Arg::with_name ("extent-hash-batch-size")
 					.long ("extent-hash-batch-size")
 					.value_name ("SIZE")
-					.default_value ("16GiB")
+					.default_value ("512GiB")
 					.help ("Amount of file extent data to hash before writing \
 						database")
 			)
@@ -77,7 +77,7 @@ pub fn parse_arguments (
 				clap::Arg::with_name ("dedupe-batch-size")
 					.long ("dedupe-batch-size")
 					.value_name ("SIZE")
-					.default_value ("2GiB")
+					.default_value ("64GiB")
 					.help ("Amount of file data to deduplicate before writing \
 						database")
 			)

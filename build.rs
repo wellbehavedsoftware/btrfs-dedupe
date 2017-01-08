@@ -12,7 +12,7 @@ fn main () {
 
 	let input =
 		Path::new (
-			"src/serde_types.in.rs");
+			"src/database/serde_types.in.rs");
 
 	let output =
 		Path::new (

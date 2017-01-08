@@ -17,20 +17,16 @@ extern crate time;
 #[ macro_use ]
 mod misc;
 
+mod commands;
 mod arguments;
-mod content;
-mod dedupe;
-mod extent;
-mod scan;
-mod serde_types;
-mod storage;
+mod database;
+mod operations;
 mod types;
 
 use std::process;
 
 use arguments::*;
-use dedupe::*;
-use extent::*;
+use commands::*;
 
 fn main () {
 
@@ -52,7 +48,7 @@ fn main_real (
 	arguments: & Arguments,
 ) -> i32 {
 
-	let mut output =
+	let output =
 		output::open ();
 
 	// delegate to command
@@ -62,13 +58,15 @@ fn main_real (
 
 		Command::Dedupe =>
 			dedupe_command (
+				& output,
 				arguments,
-				& mut output),
+			),
 
 		Command::PrintExtents =>
 			print_extents_command (
+				& output,
 				arguments,
-				& mut output),
+			)
 
 	};
 

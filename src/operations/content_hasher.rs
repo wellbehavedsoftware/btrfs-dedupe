@@ -1,8 +1,6 @@
 use std::collections::HashSet;
 use std::fs::File;
 use std::io::Read;
-use std::path::PathBuf;
-use std::rc::Rc;
 
 use output::Output;
 
@@ -11,43 +9,62 @@ use sha2::Sha256;
 
 use time;
 
-use arguments::*;
 use misc::*;
-use storage::*;
+use database::*;
 use types::*;
 
-pub struct ContentHasher {
+pub struct ContentHasher <'a> {
+
+	root_paths_set: HashSet <PathRef>,
+
+	batch_size: u64,
+
+	file_database: & 'a mut FileDatabase,
+
 	num_ignored: u64,
 	num_fresh: u64,
 	num_updated: u64,
 	num_remaining: u64,
 	num_errors: u64,
+
 }
 
-impl ContentHasher {
+impl <'a> ContentHasher <'a> {
 
 	pub fn new (
-	) -> ContentHasher {
+		root_paths: & 'a [PathRef],
+		batch_size: u64,
+		file_database: & 'a mut FileDatabase,
+	) -> ContentHasher <'a> {
+
+		let root_paths_set: HashSet <PathRef> =
+			root_paths.iter ().map (
+				|root_path|
+				root_path.clone ()
+			).collect ();
 
 		ContentHasher {
+
+			root_paths_set: root_paths_set,
+
+			batch_size: batch_size,
+
+			file_database: file_database,
+
 			num_ignored: 0,
 			num_fresh: 0,
 			num_updated: 0,
 			num_remaining: 0,
 			num_errors: 0,
+
 		}
 
 	}
 
 	pub fn calculate_hashes (
 		& mut self,
-		arguments: & Arguments,
-		output: & mut Output,
-		previous_database: FileDatabase,
-	) -> FileDatabase {
-
-		let mut new_database: FileDatabase =
-			FileDatabase::new ();
+		output: & Output,
+	) {
 
 		let mut num_ignored: u64 = 0;
 		let mut num_fresh: u64 = 0;
@@ -57,13 +74,8 @@ impl ContentHasher {
 
 		let mut size_hashed: u64 = 0;
 
-		let root_set: HashSet <Rc <PathBuf>> =
-			arguments.root_paths.iter ().map (
-				|root_path|
-				root_path.clone ()
-			).collect ();
-
-		for file_data in previous_database.into_iter () {
+		for ref mut file_data
+		in self.file_database.iter_mut () {
 
 			if (
 
@@ -75,37 +87,34 @@ impl ContentHasher {
 
 					file_data.root_path.is_some ()
 
-					&& ! root_set.contains (
+					&& ! self.root_paths_set.contains (
 						& file_data.root_path.as_ref ().unwrap ().clone ())
 
 				)
 
 			) {
 
-				new_database.insert_direct (
-					file_data);
-
 				num_ignored += 1;
+
+				continue;
 
 			} else if (
 				file_data.content_hash != ZERO_HASH
 				|| file_data.size == 0
 			) {
 
-				new_database.insert_direct (
-					file_data);
-
 				num_fresh += 1;
+
+				continue;
 
 			} else if (
 				num_updated > 0
-				&& size_hashed + file_data.size > arguments.content_hash_batch_size
+				&& size_hashed + file_data.size > self.batch_size
 			) {
 
-				new_database.insert_direct (
-					file_data);
-
 				num_remaining += 1;
+
+				continue;
 
 			} else {
 
@@ -122,13 +131,19 @@ impl ContentHasher {
 						file_data.path.clone ())
 				) {
 
-					new_database.insert_update_content_hash (
-						& file_data,
-						file_data.root_path.as_ref ().unwrap ().clone (),
-						content_hash,
-						content_hash_time.sec);
+					if content_hash != file_data.content_hash {
 
-					size_hashed += file_data.size;
+						file_data.content_hash = content_hash;
+						file_data.content_hash_time = content_hash_time.sec;
+
+						file_data.extent_hash = ZERO_HASH;
+						file_data.extent_hash_time = 0;
+
+						file_data.defragment_time = 0;
+						file_data.deduplicate_time = 0;
+
+					}
+
 					num_updated += 1;
 
 				} else {
@@ -136,6 +151,8 @@ impl ContentHasher {
 					num_errors += 1;
 
 				}
+
+				size_hashed += file_data.size;
 
 			}
 
@@ -149,8 +166,10 @@ impl ContentHasher {
 
 		output.clear_status ();
 
-		new_database
+	}
 
+	pub fn file_database (& self) -> & FileDatabase {
+		self.file_database
 	}
 
 	pub fn num_ignored (& self) -> u64 {
@@ -224,73 +243,6 @@ fn calculate_hash_for_file (
 		& hasher.result ());
 
 	Ok (result)
-
-}
-
-pub fn calculate_content_hashes (
-	arguments: & Arguments,
-	output: & mut Output,
-	file_database: FileDatabase,
-) -> Result <FileDatabase, String> {
-
-	let mut file_database =
-		file_database;
-
-	let mut content_hasher =
-		ContentHasher::new ();
-
-	loop {
-
-		// calculate a batch of hashes
-
-		file_database =
-			content_hasher.calculate_hashes (
-				arguments,
-				output,
-				file_database);
-
-		if content_hasher.num_remaining () == 0 {
-			break;
-		}
-
-		output.message_format (
-			format_args! (
-				"Hashed contents of {} out of {} files, {} remaining",
-				content_hasher.num_processed (),
-				content_hasher.num_to_process (),
-				content_hasher.num_remaining));
-
-		// write out updated database
-
-		try! (
-			write_database (
-				& arguments,
-				output,
-				& file_database));
-
-	}
-
-	output.message_format (
-		format_args! (
-			"Hashed contents of {} files with {} errors, ignored {} with fresh \
-			hashes",
-			content_hasher.num_updated (),
-			content_hasher.num_errors (),
-			content_hasher.num_fresh ()));
-
-	// write out updated database
-
-	if content_hasher.num_updated > 0 {
-
-		try! (
-			write_database (
-				& arguments,
-				output,
-				& file_database));
-
-	}
-
-	Ok (file_database)
 
 }
 
