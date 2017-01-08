@@ -1,7 +1,4 @@
 use std::collections::HashMap;
-use std::collections::HashSet;
-use std::path::PathBuf;
-use std::rc::Rc;
 
 use database::*;
 use types::*;

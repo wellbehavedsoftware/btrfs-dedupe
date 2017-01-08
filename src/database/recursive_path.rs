@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use std::cmp::Ordering;
 use std::collections::HashSet;
 use std::ffi::OsStr;
@@ -31,6 +30,7 @@ impl RecursivePath {
 		self.parent.clone ()
 	}
 
+	#[ allow (dead_code) ]
 	pub fn name (
 		& self,
 	) -> Option <& OsStr> {

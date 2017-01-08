@@ -1,12 +1,9 @@
-#![ allow (unused_parens) ]
-
 use std::collections::HashSet;
 use std::fs;
 use std::fs::DirEntry;
 use std::io;
 use std::iter::Peekable;
 use std::os::unix::fs::MetadataExt;
-use std::path::PathBuf;
 use std::rc::Rc;
 use std::vec;
 
