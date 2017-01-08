@@ -129,8 +129,12 @@ nightly, and run the dedupe process beforehand to ensure that my snapshots don't
 contain duplicated data.
 
 ```sh
-btrfs-dedupe dedupe --database /var/cache/btrfs-dedupe/database.gz
+btrfs-dedupe dedupe --database /var/cache/btrfs-dedupe/database.gz /btrfs
 ```
+
+You can add as many paths as you like, but btrfs-dedupe assumes that all the
+paths you provide are on the same btrfs filesystem. If not, then it's probably
+not going to work very well.
 
 ## Roadmap
 
