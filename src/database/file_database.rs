@@ -35,6 +35,7 @@ impl FileDatabase {
 	}
 
 	pub fn read (
+		recursive_path_database: & mut RecursivePathDatabase,
 		root_paths: & [PathRef],
 		source: & mut Read,
 	) -> Result <FileDatabase, String> {
@@ -46,13 +47,19 @@ impl FileDatabase {
 		let mut database_builder =
 			FileDatabaseBuilder::new ();
 
-		let mut root_map: HashMap <PathRef, Option <PathRef>> =
+		let mut root_map: HashMap <RecursivePathRef, Option <PathRef>> =
 			root_paths.iter ().map (
 				|root_path|
 
 				(
-					root_path.clone (),
-					Some (root_path.clone ()),
+
+					recursive_path_database.for_path (
+						root_path.as_ref (),
+					).unwrap (),
+
+					Some (
+						root_path.clone ()),
+
 				)
 
 			).collect ();
@@ -86,8 +93,9 @@ impl FileDatabase {
 			);
 
 			let file_path =
-				database_builder.get_path (
-					file_data_record.path.clone ());
+				recursive_path_database.for_path (
+					file_data_record.path,
+				).unwrap ();
 
 			let root_path =
 				database_builder.find_root (
@@ -97,19 +105,8 @@ impl FileDatabase {
 			let file_data =
 				FileData {
 
-				path:
-					database_builder.get_path (
-						file_data_record.path.clone ()),
-
-				filename:
-					database_builder.get_path (
-						Rc::new (
-							PathBuf::from (
-								file_data_record.path.file_name ().unwrap ()))),
-
-				root_path:
-					root_path,
-
+				path: file_path,
+				root_path: root_path,
 				size: file_data_record.size,
 
 				content_hash:
@@ -161,8 +158,8 @@ impl FileDatabase {
 			let file_data_record =
 				FileDataRecord {
 
-				path: file_data.path.clone (),
-				size: file_data.size.clone (),
+				path: file_data.path.to_path (),
+				size: file_data.size,
 
 				content_hash: if file_data.content_hash == ZERO_HASH {
 					None

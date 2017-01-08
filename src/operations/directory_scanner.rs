@@ -73,6 +73,7 @@ impl <'a> DirectoryScanner <'a> {
 	pub fn scan_directories (
 		mut self,
 		output: & Output,
+		recursive_path_database: & mut RecursivePathDatabase,
 	) -> Result <FileDatabase, String> {
 
 		for root_path in self.root_paths.iter () {
@@ -86,9 +87,10 @@ impl <'a> DirectoryScanner <'a> {
 					"Scanning {}",
 					root_path.to_string_lossy ()));
 
-			let root_path =
-				self.out_builder.get_path (
-					root_path.clone ());
+			let root_recursive_path =
+				recursive_path_database.for_path (
+					root_path.as_ref (),
+				).unwrap ();
 
 			let metadata =
 				try! (
@@ -124,7 +126,7 @@ impl <'a> DirectoryScanner <'a> {
 					let existing_file_path =
 						& existing_file_data.path;
 
-					if * existing_file_path >= root_path {
+					if * existing_file_path >= root_recursive_path {
 						break;
 					}
 
@@ -137,6 +139,7 @@ impl <'a> DirectoryScanner <'a> {
 
 			self.scan_directory_internal (
 				output,
+				recursive_path_database,
 				root_path.clone (),
 				root_path.clone (),
 				metadata.dev (),
@@ -171,6 +174,7 @@ impl <'a> DirectoryScanner <'a> {
 	fn scan_directory_internal (
 		& mut self,
 		output: & Output,
+		recursive_path_database: & mut RecursivePathDatabase,
 		directory: PathRef,
 		root_path: PathRef,
 		device_id: u64,
@@ -254,15 +258,10 @@ impl <'a> DirectoryScanner <'a> {
 			let entry =
 				entry_iterator.next ().unwrap ();
 
-			let entry_path =
-				Rc::new (
-					entry.path ());
-
-			let entry_filename =
-				self.out_builder.get_path (
-					Rc::new (
-						PathBuf::from (
-							entry.file_name ())));
+			let entry_recursive_path =
+				recursive_path_database.for_path (
+					entry.path (),
+				).unwrap ();
 
 			loop {
 
@@ -278,14 +277,11 @@ impl <'a> DirectoryScanner <'a> {
 					let in_next =
 						in_next_option.unwrap ();
 
-					let in_next_path =
-						in_next.path.clone ();
-
-					if in_next_path >= entry_path {
+					if in_next.path >= entry_recursive_path {
 						break;
 					}
 
-					in_next_path.exists ()
+					in_next.path.to_path ().exists ()
 
 				};
 
@@ -306,13 +302,13 @@ impl <'a> DirectoryScanner <'a> {
 				try! (
 
 				fs::symlink_metadata (
-					entry_path.as_ref (),
+					entry.path (),
 				).map_err (
 					|error|
 
 					format! (
 						"Error reading metadata for: {}: {}",
-						entry_path.to_string_lossy (),
+						entry.path ().to_string_lossy (),
 						error)
 
 				)
@@ -324,10 +320,10 @@ impl <'a> DirectoryScanner <'a> {
 
 			let (temp_root_path, temp_device_id) =
 				if self.root_paths_unordered.contains (
-					& entry_path) {
+					& entry.path ()) {
 
 				(
-					entry_path.clone (),
+					Rc::new (entry.path ()),
 					entry_metadata.dev (),
 				)
 
@@ -351,7 +347,8 @@ impl <'a> DirectoryScanner <'a> {
 
 				self.scan_directory_internal (
 					output,
-					entry_path.clone (),
+					recursive_path_database,
+					Rc::new (entry.path ()),
 					temp_root_path,
 					temp_device_id,
 				) ?;
@@ -371,7 +368,7 @@ impl <'a> DirectoryScanner <'a> {
 						let in_next_path =
 							in_next.path.clone ();
 
-						in_next_path == entry_path
+						in_next_path == entry_recursive_path
 
 					} else {
 
@@ -428,8 +425,7 @@ impl <'a> DirectoryScanner <'a> {
 					self.out_builder.insert (
 						FileData {
 
-						path: entry_path.clone (),
-						filename: entry_filename.clone (),
+						path: entry_recursive_path,
 						root_path: Some (root_path.clone ()),
 
 						size: entry_metadata.len (),
@@ -461,7 +457,7 @@ impl <'a> DirectoryScanner <'a> {
 				output.status_format (
 					format_args! (
 						"Scanning filesystem: {}",
-						entry_path.to_string_lossy ()));
+						entry.path ().to_string_lossy ()));
 
 			}
 

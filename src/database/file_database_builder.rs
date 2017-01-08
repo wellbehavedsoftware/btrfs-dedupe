@@ -7,9 +7,8 @@ use database::*;
 use types::*;
 
 pub struct FileDatabaseBuilder {
-	path_pool: HashSet <PathRef>,
 	file_data_ordered: Vec <FileData>,
-	file_data_by_parent: HashMap <PathRef, Vec <usize>>,
+	file_data_by_parent: HashMap <RecursivePathRef, Vec <usize>>,
 }
 
 impl FileDatabaseBuilder {
@@ -18,36 +17,9 @@ impl FileDatabaseBuilder {
 	) -> FileDatabaseBuilder {
 
 		FileDatabaseBuilder {
-			path_pool: HashSet::new (),
 			file_data_ordered: Vec::new (),
 			file_data_by_parent: HashMap::new (),
 		}
-
-	}
-
-	pub fn get_path (
-		& mut self,
-		path: Rc <PathBuf>,
-	) -> Rc <PathBuf> {
-
-		{
-
-			let path_pool =
-				& mut self.path_pool;
-
-			if ! path_pool.contains (
-				& path) {
-
-				path_pool.insert (
-					path.clone ());
-
-			}
-
-		}
-
-		self.path_pool.get (
-			& path,
-		).unwrap ().clone ()
 
 	}
 
@@ -63,17 +35,15 @@ impl FileDatabaseBuilder {
 
 				panic! (
 					"Tried to insert {:?} after {:?}",
-					file_data.path,
-					last_file_data.path);
+					file_data.path.to_path (),
+					last_file_data.path.to_path ());
 
 			}
 
 		}
 
 		let parent =
-			Rc::new (
-				PathBuf::from (
-					file_data.path.parent ().unwrap ()));
+			file_data.path.parent ().unwrap ();
 
 		self.file_data_by_parent.entry (
 			parent,
@@ -91,14 +61,14 @@ impl FileDatabaseBuilder {
 
 	pub fn find_root (
 		& mut self,
-		root_map: & mut HashMap <PathRef, Option <PathRef>>,
-		file_path: PathRef,
+		root_map: & mut HashMap <RecursivePathRef, Option <PathRef>>,
+		file_path: RecursivePathRef,
 	) -> Option <PathRef> {
 
 		let mut search_path =
 			Some (file_path.clone ());
 
-		let mut new_paths: Vec <PathRef> =
+		let mut new_paths: Vec <RecursivePathRef> =
 			Vec::new ();
 
 		while (
@@ -111,15 +81,7 @@ impl FileDatabaseBuilder {
 				search_path.as_ref ().unwrap ().clone ());
 
 			let search_parent =
-				search_path.unwrap ().parent ().map (
-					|search_parent|
-
-					self.get_path (
-						Rc::new (
-							PathBuf::from (
-								search_parent)))
-
-				);
+				search_path.unwrap ().parent ();
 
 			if search_parent.is_none () {
 

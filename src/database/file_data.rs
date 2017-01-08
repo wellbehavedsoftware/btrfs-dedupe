@@ -1,10 +1,10 @@
+use database::*;
 use types::*;
 
 #[ derive (Debug, Eq, Hash, PartialEq) ]
 pub struct FileData {
 
-	pub path: PathRef,
-	pub filename: PathRef,
+	pub path: RecursivePathRef,
 	pub root_path: Option <PathRef>,
 
     pub size: u64,

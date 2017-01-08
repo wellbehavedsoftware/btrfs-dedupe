@@ -39,7 +39,7 @@ impl FileDeduper {
 		output: & Output,
 		arguments: & Arguments,
 		file_database: & mut FileDatabase,
-		dedupe_map: & mut HashMap <PathRef, PathRef>,
+		dedupe_map: & mut HashMap <RecursivePathRef, RecursivePathRef>,
 	) -> Result <(), String> {
 
 		let mut num_ignored = 0;
@@ -115,7 +115,7 @@ impl FileDeduper {
 							file_data.path.to_string_lossy ()));
 
 					btrfs::defragment_file (
-						file_data.path.as_ref (),
+						file_data.path.to_path (),
 						1,
 						btrfs::CompressionType::Lzo,
 						true,
@@ -130,8 +130,8 @@ impl FileDeduper {
 							target_path.to_string_lossy ()));
 
 					btrfs::deduplicate_files_with_source (
-						target_path.as_ref (),
-						& vec! [ file_data.path.as_ref () ],
+						target_path.to_path (),
+						& vec! [ file_data.path.to_path () ],
 					).is_ok ()
 
 				};

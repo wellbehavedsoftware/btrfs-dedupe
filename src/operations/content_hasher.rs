@@ -199,14 +199,14 @@ impl <'a> ContentHasher <'a> {
 }
 
 fn calculate_hash_for_file (
-	path: PathRef,
+	path: RecursivePathRef,
 ) -> Result <Hash, String> {
 
 	let mut file =
-		try! (
-			io_result (
-				File::open (
-					path.as_ref ())));
+		io_result (
+			File::open (
+				path.to_path ()),
+		) ?;
 
 	let mut hasher =
 		Sha256::new ();

@@ -193,13 +193,13 @@ impl <'a> ExtentHasher <'a> {
 }
 
 pub fn calculate_extent_hash_for_file (
-	path: PathRef,
+	path: RecursivePathRef,
 ) -> Result <Option <Hash>, String> {
 
 	let file_extents =
-		try! (
-			btrfs::get_file_extent_map_for_path (
-				path.as_ref ()));
+		btrfs::get_file_extent_map_for_path (
+			path.to_path (),
+		) ?;
 
 	let mut hasher =
 		Sha256::new ();

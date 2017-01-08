@@ -23,12 +23,16 @@ pub fn dedupe_command (
 	arguments: & Arguments,
 ) -> Result <(), String> {
 
+	let mut recursive_path_database =
+		RecursivePathDatabase::new ();
+
 	// load existing database
 
 	let mut file_database =
 		read_database (
 			output,
 			arguments,
+			& mut recursive_path_database,
 		) ?;
 
 	// scan filesystem
@@ -37,6 +41,7 @@ pub fn dedupe_command (
 		scan_directories (
 			output,
 			arguments,
+			& mut recursive_path_database,
 			file_database,
 		) ?;
 
@@ -81,6 +86,7 @@ pub fn dedupe_command (
 fn read_database (
 	output: & Output,
 	arguments: & Arguments,
+	recursive_path_database: & mut RecursivePathDatabase,
 ) -> Result <FileDatabase, String> {
 
 	// if it doesn't exist just call new
@@ -139,6 +145,7 @@ fn read_database (
 	);
 
 	FileDatabase::read (
+		recursive_path_database,
 		& arguments.root_paths,
 		& mut database_reader,
 	).map_err (
@@ -258,6 +265,7 @@ fn write_database (
 fn scan_directories (
 	output: & Output,
 	arguments: & Arguments,
+	recursive_path_database: & mut RecursivePathDatabase,
 	file_database: FileDatabase,
 ) -> Result <FileDatabase, String> {
 
@@ -270,6 +278,7 @@ fn scan_directories (
 	Ok (
 		directory_scanner.scan_directories (
 			output,
+			recursive_path_database,
 		) ?
 	)
 
@@ -412,7 +421,7 @@ pub fn build_dedupe_map (
 	output: & Output,
 	arguments: & Arguments,
 	file_database: & FileDatabase,
-) -> HashMap <PathRef, PathRef> {
+) -> HashMap <RecursivePathRef, RecursivePathRef> {
 
 	// find all unique files
 
@@ -515,7 +524,7 @@ pub fn build_dedupe_map (
 
 	// work out what to deduplicate
 
-	let dedupe_map: HashMap <PathRef, PathRef> =
+	let dedupe_map: HashMap <RecursivePathRef, RecursivePathRef> =
 		deduplication_candidates.into_iter ().flat_map (
 			|(_hash, file_data_indices)| {
 
