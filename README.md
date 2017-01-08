@@ -8,7 +8,7 @@ It is written by [James Pharaoh](james@pharaoh.uk).
 
 It is released into the public domain under the permissive [MIT license]
 (https://opensource.org/licenses/MIT). Dependencies may have other licenses,
-please be aware that these apply to statically linked binary releases.
+please be aware that these may apply to statically linked binary releases.
 
 It is hosted at [btrfs-dedupe.com]
 (http://btrfs-dedupe.com) — please report any issues or feature requests here.
@@ -30,11 +30,37 @@ binary packages for Ubuntu trusty and xenial.
 
 ## General information
 
-The utility is very simple. It takes a list of directories, scans for files with
-matching sizes, performs an SHA256 checksum on each one, then invokes the ioctl
-to deduplicate the entire file for every match it finds. Optionally, it can
-match filenames as well as sizes; this may make the program run faster in some
-cases.
+The current version of this utility is designed for batch operation, and it uses
+a state file to enable successive executions to operate incrementally. It will
+first scan the file system and create an index of all files present, it then
+takes an SHA256 checksum for each file, then it takes an SHA256 checksum of a
+representation of the file extent map for each file. Finally it will execute the
+deduplicate ioctl for every file with a matching extent map.
+
+It saves its state regularly to a file which is simply a list of JSON entries,
+one for each file present, along with some metadata (size, mtime, etc), the
+content hash, the extent hash, and the timestamps for taking each hash and for
+performing deduplication. This file is gzipped to save space, and probably time
+as well.
+
+It will automatically skip content hashes for files which don't appear to have
+changed (from the metadata), it will skip extent hashes for files which don't
+appear to have changed (from the content hash), and it will skip deduplication
+for files which already appear to be deduplicated (from the extent hash and
+deduplication timestamp).
+
+This tool can take multiple paths, and can operate on a subset of the filesystem
+comprising the sum of these parts. It will maintain its database if it is run
+successively with different parts of the filesystem, only considering the
+specified paths to operate on, and then work correctly if run over a wider or
+different selection of paths at a later time.
+
+I believe this will work on other file systems which support these standard
+IOCTLs, but I have not tested this. In particular, I believe XFS should work. I
+have not tested this; please let me know any success or failure if you attempt
+this.
+
+## Warning
 
 *IMPORTANT CAVEAT* &mdash; I have read that there are race and/or error
 conditions which can cause filesystem corruption in the kernel implementation of
@@ -49,8 +75,7 @@ was able to detect the issue due to the integrity verification code in BTRFS and
 recover the file in question from my backup.
 
 If you don't have backups, I would recommend [ZBackup](http://zbackup.org/), and
-I also have a tool which complements this, [RZBackup]
-(https://gitlab.wellbehavedsoftware.com/well-behaved-software/wbs-backup/tree/master/btrfs-dedupe).
+I also have a tool which complements this, [RZBackup](http://rzbackup.com/).
 
 I also offer commercial backup solutions, with very competitive pricing. Please
 contact [sales@wellbehavedsoftware.com](mailto:sales@wellbehavedsoftware.com)
@@ -58,66 +83,41 @@ for more information.
 
 ## Usage
 
-From the built-in help:
-
-```
-$ btrfs-dedupe --help
-
-Btrfs Dedupe 
-
-USAGE:
-    btrfs-dedupe [FLAGS] [<PATH>]
-
-FLAGS:
-    -h, --help              Prints help information
-        --match-filename    Match filename as well as checksum
-    -V, --version           Prints version information
-
-ARGS:
-    <PATH>...    Root path to scan for files
-```
-
-## Alternatives
-
-There are two alternatives, of which I am aware:
-
-* [Duperemove](https://github.com/markfasheh/duperemove) — Flexible tool which
-is capable of block- and file-level deduplication, highly configurable, and
-supports a database of previous mtimes and checksums to improve speed. This tool
-has improved substantially since I last looked into it, and so my information
-about it is incomplete.
-
-* [Bedup](https://github.com/g2p/bedup) — Performs a similar task to this tool,
-plus it keeps a database of files in order to avoid checksumming again. The main
-implementation, however, does not use the kernel ioctls (which were simply not
-available when it was created), although a branch supports this. It also suffers
-from leaving filesystems in an inconsistent state in the case of errors, namely
-setting files as immutable, and it also crashes if there are many files to
-deduplicate.
-
-There is also [ongoing work]
-(http://www.mail-archive.com/linux-btrfs%40vger.kernel.org/msg32862.html) to
-enable automatic realtime deduplication in the filesystem itself, but this is
-likely to take a long time to stablise, and there are fundamental issues with
-the concept which make it unsuitable for many cases.
-
-There is a [wiki page](https://btrfs.wiki.kernel.org/index.php/Deduplication)
-with general information about the state of deduplication in BTRFS.
+TODO
 
 ## Roadmap
 
 The following features are planned:
 
-* Maintain a database of file checksums and modification times, similar to
-bedup, in order to avoid checksumming files which have not (apparently) changed.
+* Option to include/exclude files according to patterns.
 
-* Use BTRFS metadata to identify changed files, by comparing to snapshots or
-perhaps some other internal data, to enable files which have the same mtime, but
-which have changed, to be rescanned even if they are in the database.
+* Option to defragment files before deduplication.
 
-* Use BTRFS metadata to identify if files are already deduplicated, and avoid
-invoking the ioctl. I'm not sure if this is done automatically, but the speed at
-which a repeat invocation runs makes me think that it is not.
+* Option to force update of stored data on a regular basis, for a subset of
+  files which are selected in a periodic way (eg each file gets a forced recheck
+  once every 'n' days, which can be configured).
 
-* Extra options to limit scans to a single filesystem, and to include/exclude
-files according to patterns.
+## Alternatives
+
+There are various alternatives, documented on the BTRFS wiki:
+
+https://btrfs.wiki.kernel.org/index.php/Deduplication
+
+## FAQ
+
+### Deduplication of read only snapshots
+
+It is not currently possible to deduplicate read-only snapshots, except perhaps
+to deduplicate an extent in a read-write subvolume from one in a read-only
+snapshot.
+
+It is possible to create a read-write snapshot from a read-only one, perform the
+deduplication, and then create a new read-only snapshot. This could be done
+automatically and I may create a script to automate this. However, this does
+change the snapshot's internal "identity" in a way that will break some things,
+for example the send/receive functionality which relies on these identities.
+
+It is recommended to run deduplication _before_ you create snapshots, and on a
+longer term basis snapshots should probably be archived in a different manner,
+for example using ZBackup (which is mentioned above), which provides its own
+very efficient deduplication and compression.
