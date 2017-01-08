@@ -1,7 +1,7 @@
 [package]
 
 	name = "btrfs-dedupe"
-	version = "1.0.3"
+	version = "1.1.0"
 	description = "BTRFS whole-file deduplication tool"
 	license = "MIT"
 	homepage = "http://btrfs-dedupe.com"
