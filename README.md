@@ -160,6 +160,26 @@ https://btrfs.wiki.kernel.org/index.php/Deduplication
 
 ## FAQ
 
+### Deduplication makes my system hang
+
+This is something I have seen many times when BTRFS quotas are enabled. The
+accounting code, which takes place in batches during BTRFS's transaction commit
+code are extremely slow and will lock out all users of the file system while
+they take place.
+
+It is recommended to disable quotas when performing deduplication, and then to
+reenable them afterwards:
+
+```sh
+btrfs quota disable /btrfs
+btrfs-dedupe --database /var/cache/btrfs-dedupe/database.gz /btrfs
+btrfs quota enable /btrfs
+```
+
+This will automatically perform a quota rescan, which doesn't take that long, in
+my experience, and will also fix common problems with BTRFS quotas which tend to
+accumulate over time.
+
 ### Deduplication of read only snapshots
 
 It is not currently possible to deduplicate read-only snapshots, except perhaps
