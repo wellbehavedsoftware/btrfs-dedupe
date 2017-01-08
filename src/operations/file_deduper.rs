@@ -12,11 +12,11 @@ use database::*;
 use types::*;
 
 pub struct FileDeduper {
-	pub num_ignored: u64,
-	pub num_fresh: u64,
-	pub num_updated: u64,
-	pub num_remaining: u64,
-	pub num_errors: u64,
+	num_ignored: u64,
+	num_fresh: u64,
+	num_updated: u64,
+	num_remaining: u64,
+	num_errors: u64,
 }
 
 impl FileDeduper {
@@ -167,6 +167,22 @@ impl FileDeduper {
 
 		Ok (())
 
+	}
+
+	pub fn num_fresh (& self) -> u64 {
+		self.num_fresh
+	}
+
+	pub fn num_updated (& self) -> u64 {
+		self.num_updated
+	}
+
+	pub fn num_remaining (& self) -> u64 {
+		self.num_remaining
+	}
+
+	pub fn num_errors (& self) -> u64 {
+		self.num_errors
 	}
 
 }

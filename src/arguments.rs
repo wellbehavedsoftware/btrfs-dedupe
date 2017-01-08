@@ -316,13 +316,16 @@ pub fn parse_arguments (
 			stderr.lock ();
 
 		stderr_lock.write (
-			b"\n");
+			b"\n",
+		).unwrap ();
 
 		application.write_help (
-			& mut stderr_lock);
+			& mut stderr_lock,
+		).unwrap ();
 
 		stderr_lock.write (
-			b"\n\n");
+			b"\n\n",
+		).unwrap ();
 
 		process::exit (0);
 

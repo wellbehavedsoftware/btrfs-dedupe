@@ -174,10 +174,6 @@ impl <'a> ExtentHasher <'a> {
 		self.file_database
 	}
 
-	pub fn num_ignored (& self) -> u64 {
-		self.num_ignored
-	}
-
 	pub fn num_fresh (& self) -> u64 {
 		self.num_fresh
 	}

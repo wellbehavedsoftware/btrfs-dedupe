@@ -632,19 +632,19 @@ fn perform_deduplication (
 			& mut dedupe_map,
 		) ?;
 
-		if file_deduper.num_remaining == 0 {
+		if file_deduper.num_remaining () == 0 {
 			break;
 		}
 
 		output.message_format (
 			format_args! (
 				"Deduped {} out of {} files, {} remaining",
-				file_deduper.num_updated
-					+ file_deduper.num_errors,
-				file_deduper.num_updated
-					+ file_deduper.num_errors
-					+ file_deduper.num_remaining,
-				file_deduper.num_remaining));
+				file_deduper.num_updated ()
+					+ file_deduper.num_errors (),
+				file_deduper.num_updated ()
+					+ file_deduper.num_errors ()
+					+ file_deduper.num_remaining (),
+				file_deduper.num_remaining ()));
 
 		// write out updated database
 
@@ -658,13 +658,14 @@ fn perform_deduplication (
 
 	output.message_format (
 		format_args! (
-			"Deduped {} files with {} errors",
-			file_deduper.num_updated,
-			file_deduper.num_errors));
+			"Deduped {} files with {} errors, ignored {} already deduped",
+			file_deduper.num_updated (),
+			file_deduper.num_errors (),
+			file_deduper.num_fresh ()));
 
 	// write out updated database
 
-	if file_deduper.num_updated > 0 {
+	if file_deduper.num_updated () > 0 {
 
 		write_database (
 			output,
