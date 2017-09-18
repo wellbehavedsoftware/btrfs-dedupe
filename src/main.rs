@@ -1,9 +1,7 @@
 #![ allow (unused_parens) ]
 
-#[ macro_use ]
 extern crate clap;
 
-#[ macro_use ]
 extern crate output;
 
 extern crate btrfs;

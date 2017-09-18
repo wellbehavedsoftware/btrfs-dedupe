@@ -624,7 +624,7 @@ fn perform_deduplication (
 			arguments,
 			& file_database);
 
-	let mut file_database =
+	let file_database =
 		file_database;
 
 	let mut file_deduper =
